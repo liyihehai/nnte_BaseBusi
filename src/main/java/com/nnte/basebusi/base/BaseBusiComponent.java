@@ -51,6 +51,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
     public static void loadComponentBusiLogAttr(){
         Map<String,Object> beans = SpringContextHolder.getApplicationContext().getBeansWithAnnotation(BusiLogAttr.class);
         StringBuffer names=new StringBuffer();
+        int size=0;
         for (Map.Entry<String, Object> entry : beans.entrySet()) {
             Object instanceBody=entry.getValue();
             BusiLogAttr logAttr = instanceBody.getClass().getAnnotation(BusiLogAttr.class);
@@ -59,8 +60,9 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                 if (names.length()>0)
                     names.append(",");
                 names.append(logAttr.value());
+                size++;
             }
         }
-        BaseNnte.outConsoleLog("设置组件日志属性["+names.length()+"]："+names.toString());
+        BaseNnte.outConsoleLog("设置组件日志属性["+size+"]："+names.toString());
     }
 }

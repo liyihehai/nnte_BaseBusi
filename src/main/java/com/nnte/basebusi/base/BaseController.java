@@ -3,9 +3,12 @@ package com.nnte.basebusi.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nnte.framework.entity.KeyValue;
 import com.nnte.framework.utils.JsonUtil;
+import com.nnte.framework.utils.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +57,7 @@ public class BaseController {
      * 从请求中按参数名获取参数值，先从reqParamObj中获取
      * reqParamObj可以是Map<String,Object>或JSONObject
      */
-    public Object getRequestParam(HttpServletRequest request, Object reqParamObj, String paramName) {
+    public static Object getRequestParam(HttpServletRequest request, Object reqParamObj, String paramName) {
         if (reqParamObj != null) {
             String classname = reqParamObj.getClass().getSimpleName();
             if (classname.equalsIgnoreCase("LinkedHashMap")) {
@@ -69,5 +72,47 @@ public class BaseController {
         if (request != null)
             return request.getParameter(paramName);
         return null;
+    }
+    /**
+     * @Title: getIpAddr
+     * @Description: 获得用户真实IP地址
+     * @param request
+     * @return
+     */
+    public static String getIpAddr(HttpServletRequest request){
+        String ipAddress = request.getHeader("x-forwarded-for");
+        if(ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("Proxy-Client-IP");
+        }
+        if(ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+            ipAddress = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if(ipAddress == null || ipAddress.length() == 0 || "unknown".equalsIgnoreCase(ipAddress)) {
+
+            ipAddress = request.getHeader("X-Real-IP");
+            if(StringUtils.isEmpty(ipAddress)){
+                ipAddress = request.getRemoteAddr();
+            }
+            if(!StringUtils.isEmpty(ipAddress)){
+                if(ipAddress.equals("127.0.0.1") || ipAddress.equals("0:0:0:0:0:0:0:1")){
+                    //根据网卡取本机配置的IP
+                    InetAddress inet=null;
+                    try {
+                        inet = InetAddress.getLocalHost();
+                    } catch (UnknownHostException uhe) {
+                        uhe.printStackTrace();
+                        return request.getRemoteAddr();
+                    }
+                    ipAddress= inet.getHostAddress();
+                }
+            }
+        }
+        //对于通过多个代理的情况，第一个IP为客户端真实IP,多个IP按照','分割
+        if(ipAddress!=null && ipAddress.length()>15){ //"***.***.***.***".length() = 15
+            if(ipAddress.indexOf(",")>0){
+                ipAddress = ipAddress.substring(0,ipAddress.indexOf(","));
+            }
+        }
+        return ipAddress;
     }
 }
