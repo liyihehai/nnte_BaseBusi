@@ -1,9 +1,8 @@
 package com.nnte.basebusi.base;
 
-import com.nnte.basebusi.annotation.BusiLogAttr;
-import com.nnte.basebusi.annotation.FloatCheck;
-import com.nnte.basebusi.annotation.IntegerCheck;
-import com.nnte.basebusi.annotation.StringCheck;
+import com.nnte.basebusi.annotation.*;
+import com.nnte.basebusi.entity.MEnter;
+import com.nnte.basebusi.entity.SysRole;
 import com.nnte.basebusi.excption.BusiException;
 import com.nnte.basebusi.excption.ExpLogInterface;
 import com.nnte.framework.annotation.ConfigLoad;
@@ -11,12 +10,15 @@ import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.base.ConfigInterface;
 import com.nnte.framework.base.DBSchemaBase;
 import com.nnte.framework.base.SpringContextHolder;
+import com.nnte.framework.entity.KeyValue;
 import com.nnte.framework.utils.DateUtils;
 import com.nnte.framework.utils.FileLogUtil;
 import com.nnte.framework.utils.StringUtils;
+import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Field;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +32,15 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
     public BaseBusiComponent(String loggername){
         setLoggerName(loggername);
     }
+    /**
+     * 定义系统功能入口函数
+     * */
+    private static TreeMap<String, MEnter> MEnterMap=new TreeMap();
+    /**
+     * 定义系统角色及入口功能
+     * */
+    private static TreeMap<String,SysRole> SysRoleRulerMap = new TreeMap<>();
+
     @ConfigLoad
     public ConfigInterface appConfig;//取本地配置接口
     /**
@@ -115,7 +126,6 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                     }catch (IllegalAccessException ie){
                         throw new BusiException(colName+"访问错误!"+ie.getMessage());
                     }
-                    return true;
                 }
             }else if (typeName.indexOf(DBSchemaBase.SchemaColType.S.getVal())>=0){
                 StringCheck stringCheck=f.getAnnotation(StringCheck.class);
@@ -145,7 +155,6 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                     }catch (IllegalAccessException ie){
                         throw new BusiException(colName+"访问错误!"+ie.getMessage());
                     }
-                    return true;
                 }
             }else if (typeName.indexOf(DBSchemaBase.SchemaColType.F.getVal())>=0){
                 FloatCheck floatCheck=f.getAnnotation(FloatCheck.class);
@@ -168,12 +177,94 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                     }catch (IllegalAccessException ie){
                         throw new BusiException(colName+"访问错误!"+ie.getMessage());
                     }
-                    return true;
                 }
             }else if (typeName.indexOf(DBSchemaBase.SchemaColType.D.getVal())>=0){
 
             }
         }
         return true;
+    }
+    /**
+     * 装载系统的模块入口定义及系统权限定义
+     * */
+    public static void loadSystemFuntionEnters(Map<String, Object> SystemRoleMap){
+        ApplicationContext sch=SpringContextHolder.getApplicationContext();
+        String[] names=sch.getBeanDefinitionNames();
+        for(String beanName:names){
+            Object instanceBody=sch.getBean(beanName);
+            Method[] methods=instanceBody.getClass().getDeclaredMethods();
+            for(Method m:methods){
+                ModuleEnter feAnno=m.getAnnotation(ModuleEnter.class);
+                if (feAnno!=null){
+                    MEnter fe=new MEnter(feAnno.path(),feAnno.name(),feAnno.params(),
+                            feAnno.desc(),feAnno.sysRole(),feAnno.roleRuler());
+                    MEnterMap.put(fe.getPath(),fe);
+                    String roleCode = fe.getSysRole();
+                    if (StringUtils.isNotEmpty(roleCode)){
+                        String roleName=StringUtils.defaultString(SystemRoleMap.get(roleCode));
+                        if (StringUtils.isNotEmpty(roleName)){
+                            SysRole sr=SysRoleRulerMap.get(roleCode);
+                            if (sr==null){
+                                SysRole newSr=new SysRole();
+                                newSr.setRoleCode(roleCode);
+                                newSr.setRoleName(roleName);
+                                Map<String,String> rulerMap = new HashMap<>();
+                                newSr.setRulerMap(rulerMap);
+                                SysRoleRulerMap.put(roleCode,newSr);
+                                sr = newSr;
+                            }
+                            sr.getRulerMap().put(fe.getRoleRuler(),fe.getName());
+                        }
+                    }
+                }
+            }
+        }
+        BaseNnte.outConsoleLog("加载系统入口函数信息......("+MEnterMap.size()+")");
+    }
+    /**
+     * 取得系统功能入口函数定义列表
+     * */
+    public static List<MEnter> getSystemModuleEnters(){
+        if (MEnterMap.size()>0){
+            List<MEnter> retList=new ArrayList<>();
+            Iterator it=MEnterMap.values().iterator();
+            while(it.hasNext()){
+                retList.add((MEnter)it.next());
+            }
+            return retList;
+        }
+        return null;
+    }
+    /**
+     * 取得模块的定义信息
+     * */
+    public static MEnter getSystemMEnter(String path){
+        if (MEnterMap.size()>0){
+            return MEnterMap.get(path);
+        }
+        return null;
+    }
+    /**
+     * 取得系统角色权限功能列表
+     * */
+    public static List<KeyValue> getSystemRoleRulerList(String sysRoleCode){
+        Map<String,String> rulerMap=getSystemRoleRulerMap(sysRoleCode);
+        if (rulerMap!=null) {
+            List<KeyValue> retList = new ArrayList<>();
+            for (String code : rulerMap.keySet())
+                retList.add(new KeyValue(code, rulerMap.get(code)));
+            return retList;
+        }
+        return null;
+    }
+    /**
+     * 取得系统角色权限功能MAP
+     * */
+    public static Map<String,String> getSystemRoleRulerMap(String sysRoleCode){
+        SysRole sr=SysRoleRulerMap.get(sysRoleCode);
+        if (sr!=null && sr.getRulerMap()!=null && sr.getRulerMap().size()>0){
+            return sr.getRulerMap();
+        }
+        return null;
     }
 }
