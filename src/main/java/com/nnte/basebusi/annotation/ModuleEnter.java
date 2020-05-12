@@ -14,7 +14,6 @@ import java.lang.annotation.*;
 public @interface ModuleEnter {
     String path();                  //入口函数路径
     String name();                  //入口函数名称
-    String params() default "";     //入口函数参数,默认为空
     String desc();                  //入口函数描述
     /**
      * 模块角色权限，只有符合模块角色及权限的操作员才能进入本模块
@@ -22,4 +21,11 @@ public @interface ModuleEnter {
      * */
     String sysRole() default "";    //系统角色 -- 限制进入本模块的系统角色
     String roleRuler() default "";  //角色权限(权限名称与入口函数名称相同)
+    /**
+     * 功能的模块定义
+     * 功能的路径实际为：App(应用) -> Module（模块） ->Function(功能)
+     * */
+    String appCode();                       //应用编码
+    String moduleCode();                    //模块编号
+    String moduleVersion() default "1.0";   //模块版本
 }

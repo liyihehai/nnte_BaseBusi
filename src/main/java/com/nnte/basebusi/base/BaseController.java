@@ -1,12 +1,15 @@
 package com.nnte.basebusi.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.nnte.basebusi.excption.BusiException;
 import com.nnte.framework.entity.KeyValue;
+import com.nnte.framework.utils.FreeMarkertUtil;
 import com.nnte.framework.utils.JsonUtil;
 import com.nnte.framework.utils.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -114,5 +117,20 @@ public class BaseController {
             }
         }
         return ipAddress;
+    }
+    /**
+     * 直接通过FTL渲染页面返回给请求端
+     * */
+    public static void ResponsByFtl(HttpServletRequest request,HttpServletResponse response,
+                             Map<String,Object> paramMap,String ftlName) throws BusiException{
+        try {
+            String content = FreeMarkertUtil.getFreemarkerFtl(request, request.getServletContext(),
+                    FreeMarkertUtil.pathType.cls, paramMap, ftlName);
+            response.setContentType("text/html;charset=utf-8");
+            response.getWriter().print(content);
+            response.getWriter().close();
+        }catch (IOException ioe){
+            throw new BusiException(ioe,1005, BusiException.ExpLevel.ERROR);
+        }
     }
 }

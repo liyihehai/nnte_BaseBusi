@@ -196,8 +196,8 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
             for(Method m:methods){
                 ModuleEnter feAnno=m.getAnnotation(ModuleEnter.class);
                 if (feAnno!=null){
-                    MEnter fe=new MEnter(feAnno.path(),feAnno.name(),feAnno.params(),
-                            feAnno.desc(),feAnno.sysRole(),feAnno.roleRuler());
+                    MEnter fe=new MEnter(feAnno.path(),feAnno.name(),feAnno.desc(),feAnno.sysRole(),
+                            feAnno.roleRuler(),feAnno.appCode(),feAnno.moduleCode(),feAnno.moduleVersion());
                     MEnterMap.put(fe.getPath(),fe);
                     String roleCode = fe.getSysRole();
                     if (StringUtils.isNotEmpty(roleCode)){
