@@ -133,4 +133,21 @@ public class BaseController {
             throw new BusiException(ioe,1005, BusiException.ExpLevel.ERROR);
         }
     }
+    /**
+     * 打印对象的json给请求端
+     * */
+    public static void printJsonObject(HttpServletResponse response,Object obj) throws BusiException{
+        try {
+            String json = JsonUtil.beanToJson(obj);
+            response.setContentType("text/html;charset=utf-8");
+            response.getWriter().print(json);
+            response.getWriter().close();
+        } catch (IOException ioe) {
+            throw new BusiException(ioe,1005, BusiException.ExpLevel.ERROR);
+        }
+    }
+
+    public static void setParamMapDataEnv(HttpServletRequest request, Map<String, Object> paramMap) {
+        paramMap.put("envData", request.getAttribute("envData"));
+    }
 }

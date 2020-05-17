@@ -27,7 +27,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
     private String logrootpath; //日志路径
 
     public BaseBusiComponent(){
-        setLoggerName(this.getClass().getName());//路径默认是组件名称
+        setLoggerName(this.getClass().getSimpleName());//路径默认是组件名称
     }
     public BaseBusiComponent(String loggername){
         setLoggerName(loggername);
@@ -53,16 +53,23 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
 
     @Override
     public void logException(BusiException busiExp) {
-        logFileMsg(busiExp.getMessage());
+        logFileMsg2(busiExp.getMessage(),"logException",1);
     }
 
     /**
      * 通过本组件输出一条日志信息到文件,同时打印到控制台
      * */
     public void logFileMsg(String logMsg) {
-        if (StringUtils.isNotEmpty(loggername))
-            FileLogUtil.WriteLogToFile(loggername,logrootpath,logMsg);
-        BaseNnte.outConsoleLog(logMsg);
+        String toFileMsg=BaseNnte.outConsoleLog(logMsg,"logFileMsg",1);
+        if (StringUtils.isNotEmpty(loggername)) {
+            FileLogUtil.WriteLogToFile(loggername, logrootpath, toFileMsg);
+        }
+    }
+    public void logFileMsg2(String logMsg,String methodName,int offLine) {
+        String toFileMsg=BaseNnte.outConsoleLog(logMsg,methodName,offLine);
+        if (StringUtils.isNotEmpty(loggername)) {
+            FileLogUtil.WriteLogToFile(loggername, logrootpath, toFileMsg);
+        }
     }
     /**
      * 设置有日志属性注解的组件的日志属性
