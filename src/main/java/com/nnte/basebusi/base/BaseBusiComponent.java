@@ -274,4 +274,25 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
         }
         return null;
     }
+    /**
+     * 通过接口打印日志：INFO
+     * */
+    public static void logInfo(ExpLogInterface logInterface,String info){
+        if (logInterface!=null)
+            logInterface.logException(new BusiException(2001,info, BusiException.ExpLevel.INFO));
+    }
+    /**
+     * 通过接口打印日志：WARN
+     * */
+    public static void logWarn(ExpLogInterface logInterface,String warn){
+        if (logInterface!=null)
+            logInterface.logException(new BusiException(2002,warn, BusiException.ExpLevel.WARN));
+    }
+    /**
+     * 通过接口打印日志：ERROR
+     * */
+    public static void logError(ExpLogInterface logInterface,Exception e){
+        if (logInterface!=null)
+            logInterface.logException(new BusiException(e,2003, BusiException.ExpLevel.ERROR));
+    }
 }

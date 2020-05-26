@@ -5,13 +5,16 @@ import com.nnte.basebusi.excption.BusiException;
 import com.nnte.framework.entity.KeyValue;
 import com.nnte.framework.utils.FreeMarkertUtil;
 import com.nnte.framework.utils.JsonUtil;
+import com.nnte.framework.utils.MapUtil;
 import com.nnte.framework.utils.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -149,5 +152,26 @@ public class BaseController {
 
     public static void setParamMapDataEnv(HttpServletRequest request, Map<String, Object> paramMap) {
         paramMap.put("envData", request.getAttribute("envData"));
+    }
+
+    /**
+     * 从请求参数中拷贝属性值，依据_dim字段名称进行拷贝
+     * _dim属性不能是对象属性
+     * */
+    public static void copyFromRequestParams(HttpServletRequest request, Object _dim) throws BusiException{
+        Field[] fields = _dim.getClass().getDeclaredFields();
+        Map<String,Object> tmpMap = new HashMap<>();
+        try {
+            for (Field field : fields) {
+                field.setAccessible(true); // 设置属性是可以访问的
+                Object paramObj=getRequestParam(request,null,field.getName());
+                tmpMap.put(field.getName(),paramObj);
+            }
+            if (tmpMap.size()>0){
+                MapUtil.copyFromSrcMap(tmpMap,_dim);
+            }
+        } catch (Exception e) {
+            throw new BusiException(e,9999, BusiException.ExpLevel.ERROR);
+        }
     }
 }
