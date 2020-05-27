@@ -55,15 +55,16 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
     public void logException(BusiException busiExp) {
         logFileMsg2(busiExp.getMessage(),"logException",1);
     }
+    @Override
+    public String getLoggername(){return loggername;}
+    @Override
+    public String getLogrootpath(){return logrootpath;}
 
     /**
      * 通过本组件输出一条日志信息到文件,同时打印到控制台
      * */
     public void logFileMsg(String logMsg) {
-        String toFileMsg=BaseNnte.outConsoleLog(logMsg,"logFileMsg",1);
-        if (StringUtils.isNotEmpty(loggername)) {
-            FileLogUtil.WriteLogToFile(loggername, logrootpath, toFileMsg);
-        }
+        logFileMsg2(logMsg,"logFileMsg",1);
     }
     public void logFileMsg2(String logMsg,String methodName,int offLine) {
         String toFileMsg=BaseNnte.outConsoleLog(logMsg,methodName,offLine);
@@ -278,21 +279,30 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
      * 通过接口打印日志：INFO
      * */
     public static void logInfo(ExpLogInterface logInterface,String info){
-        if (logInterface!=null)
-            logInterface.logException(new BusiException(2001,info, BusiException.ExpLevel.INFO));
+        if (logInterface!=null){
+            String toFileMsg=BaseNnte.outConsoleLog(info,"logInfo",1);
+            if (StringUtils.isNotEmpty(logInterface.getLoggername())) {
+                FileLogUtil.WriteLogToFile(logInterface.getLoggername(),
+                        logInterface.getLogrootpath(), toFileMsg);
+            }
+        }
     }
     /**
      * 通过接口打印日志：WARN
      * */
     public static void logWarn(ExpLogInterface logInterface,String warn){
-        if (logInterface!=null)
-            logInterface.logException(new BusiException(2002,warn, BusiException.ExpLevel.WARN));
+        if (logInterface!=null) {
+            BusiException be = new BusiException(3000,warn ,BusiException.ExpLevel.WARN);
+            be.printException(logInterface,"logWarn");
+        }
     }
     /**
      * 通过接口打印日志：ERROR
      * */
     public static void logError(ExpLogInterface logInterface,Exception e){
-        if (logInterface!=null)
-            logInterface.logException(new BusiException(e,2003, BusiException.ExpLevel.ERROR));
+        if (logInterface!=null) {
+            BusiException be = new BusiException(e,3000, BusiException.ExpLevel.ERROR);
+            be.printException(logInterface,"logError");
+        }
     }
 }

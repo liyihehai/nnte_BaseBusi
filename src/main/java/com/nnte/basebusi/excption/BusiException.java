@@ -1,6 +1,7 @@
 package com.nnte.basebusi.excption;
 
 import com.nnte.framework.base.BaseNnte;
+import com.nnte.framework.utils.FileLogUtil;
 import com.nnte.framework.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -57,7 +58,7 @@ public class BusiException extends Exception{
      * 如果异常等级为ERROR，控制台会打印程序堆栈
      * 如果等级临时接口有效，按临时异常等级执行异常输出
      * */
-    public void printException(ExpLogInterface log){
+    public void printException(ExpLogInterface log,String callMethodName){
         ExpLevel tmpLevel=null;
         if (tmpLogLevelInter!=null)
             tmpLevel=tmpLogLevelInter.getTempExpLevel();
@@ -66,20 +67,27 @@ public class BusiException extends Exception{
             ExpLevel srcLevel=this.expLevel;
             if (tmpLevel!=null)
                 expLevel = tmpLevel;
-            log.logException(this);
+            String toFileMsg;
+            if (StringUtils.isEmpty(callMethodName))
+                toFileMsg=BaseNnte.outConsoleLog(getMessage(),"printException",1);
+            else
+                toFileMsg=BaseNnte.outConsoleLog(getMessage(),callMethodName,1);
+            if (StringUtils.isNotEmpty(log.getLoggername())) {
+                FileLogUtil.WriteLogToFile(log.getLoggername(), log.getLogrootpath(), toFileMsg);
+            }
             expLevel = srcLevel;
         }
-        StringBuffer outBuffer = new StringBuffer();
-        outBuffer.append("BusiException ").append(expLevel);
-        outBuffer.append(" Code=");
-        if (expCode!=null)
-            outBuffer.append(expCode);
-        outBuffer.append(",Message=");
-        String expMag = StringUtils.defaultString(this.getMessage());
-        outBuffer.append(expMag);
-        BaseNnte.outConsoleLog(outBuffer.toString());
-        if (expLevel!=null && expLevel.equals(ExpLevel.ERROR) ||
-                tmpLevel!=null && tmpLevel.equals(ExpLevel.ERROR))
-            this.printStackTrace();
+        if (expLevel!=null && !expLevel.equals(ExpLevel.INFO) ||
+                tmpLevel!=null && !tmpLevel.equals(ExpLevel.INFO)){
+            StringBuffer outBuffer = new StringBuffer();
+            for(StackTraceElement ste:this.getStackTrace()){
+                outBuffer.append(ste.getFileName()).append(":").append(ste.getLineNumber()).append("\r\n");
+            }
+            String traceMgs=outBuffer.toString();
+            System.out.print(traceMgs);
+            if (StringUtils.isNotEmpty(log.getLoggername())) {
+                FileLogUtil.WriteLogToFile(log.getLoggername(), log.getLogrootpath(), traceMgs);
+            }
+        }
     }
 }
