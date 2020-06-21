@@ -264,6 +264,16 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
         return null;
     }
     /**
+     * 通过权限码查询功能路径
+     * */
+    public static String getPathByRuler(String ruler){
+        MEnter menter=SysRulerMEnterMap.get(ruler);
+        if (menter!=null){
+            return menter.getPath();
+        }
+        return null;
+    }
+    /**
      * 取得系统角色权限功能列表
      * */
     public static List<KeyValue> getSystemRoleRulerList(String sysRoleCode){
