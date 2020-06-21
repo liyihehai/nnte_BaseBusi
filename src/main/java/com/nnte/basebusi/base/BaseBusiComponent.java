@@ -34,13 +34,18 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
     }
     /**
      * 定义系统功能入口函数
+     * key:功能路径；MEnter：功能对象
      * */
     private static TreeMap<String, MEnter> MEnterMap=new TreeMap();
     /**
      * 定义系统角色及入口功能
+     * key:系统角色代码；SysRole：系统角色对象
      * */
     private static TreeMap<String,SysRole> SysRoleRulerMap = new TreeMap<>();
-
+    /**
+     * 定义系统权限与功能对象的对应关系
+     * */
+    private static TreeMap<String,MEnter> SysRulerMEnterMap = new TreeMap<>();
     @ConfigLoad
     public ConfigInterface appConfig;//取本地配置接口
     /**
@@ -53,7 +58,8 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
 
     @Override
     public void logException(BusiException busiExp) {
-        logFileMsg2(busiExp.getMessage(),"logException",1);
+     //   logFileMsg2(busiExp.getMessage(),"logException",1);
+        busiExp.printException(this,"logException");
     }
     @Override
     public String getLoggername(){return loggername;}
@@ -195,7 +201,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
     /**
      * 装载系统的模块入口定义及系统权限定义
      * */
-    public static void loadSystemFuntionEnters(Map<String, Object> SystemRoleMap){
+    public static void loadSystemFuntionEnters(Map<String, Object> SystemRoleMap) throws BusiException{
         ApplicationContext sch=SpringContextHolder.getApplicationContext();
         String[] names=sch.getBeanDefinitionNames();
         for(String beanName:names){
@@ -206,7 +212,12 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                 if (feAnno!=null){
                     MEnter fe=new MEnter(feAnno.path(),feAnno.name(),feAnno.desc(),feAnno.sysRole(),
                             feAnno.roleRuler(),feAnno.appCode(),feAnno.moduleCode(),feAnno.moduleVersion());
+                    if (MEnterMap.get(fe.getPath())!=null)
+                        throw new BusiException("功能模块路径重复:"+fe.getPath());
                     MEnterMap.put(fe.getPath(),fe);
+                    if (SysRulerMEnterMap.get(fe.getRoleRuler())!=null)
+                        throw new BusiException("功能模块权限重复:"+fe.getRoleRuler());
+                    SysRulerMEnterMap.put(fe.getRoleRuler(),fe);
                     String roleCode = fe.getSysRole();
                     if (StringUtils.isNotEmpty(roleCode)){
                         String roleName=StringUtils.defaultString(SystemRoleMap.get(roleCode));
