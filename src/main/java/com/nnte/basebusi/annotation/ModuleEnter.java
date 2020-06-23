@@ -5,6 +5,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
+@Inherited
 /***
  * 系统功能入口注解 李毅 2020/5/3
  * 加载方法为 BaseBusiComponent.loadSystemFuntionEnters()

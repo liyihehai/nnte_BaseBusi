@@ -82,7 +82,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
      * 设置有日志属性注解的组件的日志属性
      * */
     public static void loadComponentBusiLogAttr(){
-        Map<String,Object> beans = SpringContextHolder.getApplicationContext().getBeansWithAnnotation(BusiLogAttr.class);
+     /*   Map<String,Object> beans = SpringContextHolder.getApplicationContext().getBeansWithAnnotation(BusiLogAttr.class);
         StringBuffer names=new StringBuffer();
         int size=0;
         for (Map.Entry<String, Object> entry : beans.entrySet()) {
@@ -96,7 +96,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                 size++;
             }
         }
-        BaseNnte.outConsoleLog("设置组件日志属性["+size+"]："+names.toString());
+        BaseNnte.outConsoleLog("设置组件日志属性["+size+"]："+names.toString());*/
     }
 
     /**
@@ -212,9 +212,13 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                 if (feAnno!=null){
                     MEnter fe=new MEnter(feAnno.path(),feAnno.name(),feAnno.desc(),feAnno.sysRole(),
                             feAnno.roleRuler(),feAnno.appCode(),feAnno.moduleCode(),feAnno.moduleVersion());
+                    if (StringUtils.isEmpty(fe.getPath()))
+                        throw new BusiException("功能模块路径为空");
                     if (MEnterMap.get(fe.getPath())!=null)
                         throw new BusiException("功能模块路径重复:"+fe.getPath());
                     MEnterMap.put(fe.getPath(),fe);
+                    if (StringUtils.isEmpty(fe.getRoleRuler()))
+                        throw new BusiException("功能模块权限为空:PATH="+fe.getPath());
                     if (SysRulerMEnterMap.get(fe.getRoleRuler())!=null)
                         throw new BusiException("功能模块权限重复:"+fe.getRoleRuler());
                     SysRulerMEnterMap.put(fe.getRoleRuler(),fe);

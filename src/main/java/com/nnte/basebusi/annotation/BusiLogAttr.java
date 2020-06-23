@@ -5,6 +5,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
+@Inherited
 /***
  * 业务日志属性注解 李毅 2020/4/19
  * 加载方法为 BaseBusiComponent.loadComponentBusiLogAttr()

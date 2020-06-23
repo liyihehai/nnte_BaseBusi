@@ -5,6 +5,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
+@Inherited
 /*
 * 本注解用于函数，表示函数需要统一获取数据源，业务入口函数使用
 * @value 用于标识需要创建的数据源的名称
