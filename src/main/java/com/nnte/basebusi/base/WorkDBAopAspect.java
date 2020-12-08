@@ -28,8 +28,7 @@ public class WorkDBAopAspect {
     /*切点条件：
      * 1:组件必须有@WorkDBAspect注解，
      * 2:方法必须有@DBSrcTranc注解，
-     * 3:第一个参数必须是Map<String,Object> paramMap， (去除)
-     * 4:返回值必须是Map<String,Object>
+     * 3:返回值必须是Map<String,Object>
      */
     /*
     @Pointcut("@target(com.nnte.framework.annotation.WorkDBAspect) && @annotation(com.nnte.basebusi.annotation.DBSrcTranc) && args(pMap,..) && execution(public java.util.Map<String,Object> *(..))")
@@ -51,27 +50,6 @@ public class WorkDBAopAspect {
             boolean autocommit=dbSrcTranc.autocommit();
             BaseNnte.outConsoleLog("WorkDBAopPointCut dataSrcName="+value+" start ...");
             BaseService.setThreadLocalCSSF(value,autocommit);
-            /*
-            DynamicDatabaseSourceHolder.dbsourceSqlSessionFactory dbsrcSSF=dynamicDSHolder.getDBsrcSSF(value);
-            if (dbsrcSSF==null)
-            {
-                BaseNnte.setRetFalse(ret,9998,"系统繁忙[错误的数据源:"+value+"]");
-                BaseNnte.outConsoleLog(ret.get("msg").toString());
-                return ret;
-            }
-            conn=dbsrcSSF.getDataSource().getConnection();
-            if (dbsrcSSF.getDataSource()==null ||
-                    conn==null || conn.isClosed())
-            {
-                BaseNnte.setRetFalse(ret,9998,"系统繁忙[取数据链接失败]");
-                BaseNnte.outConsoleLog(ret.get("msg").toString());
-                return ret;
-            }
-            conn.setAutoCommit(autocommit);
-            ConnSqlSessionFactory cssf=new ConnSqlSessionFactory(conn,dbsrcSSF.getSqlSessionFactory());
-            if (null != pMap) {
-                pMap.put("ConnSqlSessionFactory",cssf);
-            }*/
             ret =  (Map<String,Object>)pjp.proceed();
             return ret;
         } catch (Throwable e) {

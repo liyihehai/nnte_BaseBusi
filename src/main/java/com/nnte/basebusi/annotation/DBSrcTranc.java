@@ -13,7 +13,8 @@ import java.lang.annotation.*;
 * */
 public @interface DBSrcTranc {
     public static final String Config_DBSrc_Name = "sqlite3db";
-    public static final String Work_DBSrc_Name = "mysqldb";
+    //public static final String Work_DBSrc_Name = "mysqldb";
+    public static final String Work_DBSrc_Name = "postgresqldb";
     String value() default Work_DBSrc_Name;
     boolean autocommit() default true;
 }
