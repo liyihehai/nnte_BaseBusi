@@ -49,7 +49,7 @@ public class WorkDBAopAspect {
             String value = dbSrcTranc.value();
             boolean autocommit=dbSrcTranc.autocommit();
             BaseNnte.outConsoleLog("WorkDBAopPointCut dataSrcName="+value+" start ...");
-            BaseService.setThreadLocalCSSF(value,autocommit);
+            BaseService.setThreadLocalSession(value,autocommit);
             ret =  (Map<String,Object>)pjp.proceed();
             return ret;
         } catch (Throwable e) {
@@ -58,7 +58,7 @@ public class WorkDBAopAspect {
             e.printStackTrace();
             return ret;
         } finally {
-            BaseService.removeThreadLocalCSSF(ret);
+            BaseService.removeThreadLocalSession(ret);
             BaseNnte.outConsoleLog("WorkDBAopPointCut finally ...");
         }
     }
