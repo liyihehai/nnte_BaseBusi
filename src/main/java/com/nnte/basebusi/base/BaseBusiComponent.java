@@ -1,7 +1,9 @@
 package com.nnte.basebusi.base;
 
 import com.nnte.basebusi.annotation.*;
+import com.nnte.basebusi.entity.AppRegistry;
 import com.nnte.basebusi.entity.MEnter;
+import com.nnte.basebusi.entity.SysModel;
 import com.nnte.basebusi.entity.SysRole;
 import com.nnte.basebusi.excption.BusiException;
 import com.nnte.basebusi.excption.ExpLogInterface;
@@ -46,8 +48,15 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
      * 定义系统权限与功能对象的对应关系
      * */
     private static TreeMap<String,MEnter> SysRulerMEnterMap = new TreeMap<>();
+    /**
+     * 定义系统模块集合
+     * */
+    private static TreeMap<String, SysModel> SysModelMap = new TreeMap<>();
+    /**
+     * 取本地配置接口
+     * */
     @ConfigLoad
-    public ConfigInterface appConfig;//取本地配置接口
+    public ConfigInterface appConfig;
     /**
      * 设置组件日志打印路径
      * */
@@ -78,27 +87,6 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
             FileLogUtil.WriteLogToFile(loggername, logrootpath, toFileMsg);
         }
     }
-    /**
-     * 设置有日志属性注解的组件的日志属性
-     * */
-    public static void loadComponentBusiLogAttr(){
-     /*   Map<String,Object> beans = SpringContextHolder.getApplicationContext().getBeansWithAnnotation(BusiLogAttr.class);
-        StringBuffer names=new StringBuffer();
-        int size=0;
-        for (Map.Entry<String, Object> entry : beans.entrySet()) {
-            Object instanceBody=entry.getValue();
-            BusiLogAttr logAttr = instanceBody.getClass().getAnnotation(BusiLogAttr.class);
-            if (instanceBody instanceof BaseBusiComponent){
-                ((BaseBusiComponent) instanceBody).setLoggerName(logAttr.value());
-                if (names.length()>0)
-                    names.append(",");
-                names.append(logAttr.value());
-                size++;
-            }
-        }
-        BaseNnte.outConsoleLog("设置组件日志属性["+size+"]："+names.toString());*/
-    }
-
     /**
      * 检测对象属性的值是否正确，本函数一般用于输入检测
      * */
@@ -239,8 +227,46 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                             sr.getRulerMap().put(fe.getRoleRuler(),fe.getName());
                         }
                     }
+                    if (SysModelMap.get(fe.getModuleCode())==null){
+                        //需要初始化模块定义
+                        String modelName=AppRegistry.getModuleMap().get(fe.getModuleCode());
+                        if (StringUtils.isEmpty(modelName))
+                            throw new BusiException("模块编号"+fe.getModuleCode()+"没有通过应用注册!");
+                        SysModel newSysModel = new SysModel();
+                        newSysModel.setModelCode(fe.getModuleCode());
+                        newSysModel.setModelVersion(fe.getModuleVersion());
+                        newSysModel.setModelName(modelName);
+                        SysModelMap.put(fe.getModuleCode(),newSysModel);
+                    }
                 }
             }
+        }
+        //守护进程自动注册
+        for(String beanName:names) {
+            WatchComponent watchComponent = SpringContextHolder.getBean(WatchComponent.class);
+            Object instanceBody = sch.getBean(beanName);
+            if (instanceBody instanceof WatchInterface){
+                WatchAttr watchAttr=instanceBody.getClass().getAnnotation(WatchAttr.class);
+                int index=0;
+                int execTimes=-1;
+                if (watchAttr!=null){
+                    index=watchAttr.value();
+                    execTimes=watchAttr.execTimes();
+                }
+                watchComponent.registerWatchItem((WatchInterface) instanceBody,index,execTimes);
+            }
+        }
+        //启动实现了LoadModelLibTypeInterface接口的组件加载模块LibType
+        for(String beanName:names) {
+            Object instanceBody = sch.getBean(beanName);
+            if (instanceBody instanceof LoadModelLibTypeInterface){
+                ((LoadModelLibTypeInterface) instanceBody).LoadModelLibType();
+            }
+        }
+        //AppInitInterface接口启动模块注册回调
+        if (AppRegistry.getAppInitInterface()!=null){
+            AppRegistry.getAppInitInterface().onRegisterFunctions(AppRegistry.getAppCode(),
+                    AppRegistry.getAppName(),AppRegistry.getModuleMap(),getSystemModuleEnters());
         }
         BaseNnte.outConsoleLog("加载系统入口函数信息......("+MEnterMap.size()+")");
     }
@@ -249,11 +275,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
      * */
     public static List<MEnter> getSystemModuleEnters(){
         if (MEnterMap.size()>0){
-            List<MEnter> retList=new ArrayList<>();
-            Iterator it=MEnterMap.values().iterator();
-            while(it.hasNext()){
-                retList.add((MEnter)it.next());
-            }
+            List<MEnter> retList=new ArrayList<>(MEnterMap.values());
             return retList;
         }
         return null;
@@ -329,5 +351,23 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
             BusiException be = new BusiException(e,3000, BusiException.ExpLevel.ERROR);
             be.printException(logInterface,"logError");
         }
+    }
+    /**
+     * 取得模块序列
+     * */
+    public static List<SysModel> getSysModelList(){
+        return new ArrayList<>(SysModelMap.values());
+    }
+    /**
+     * 取得模块MAP
+     * */
+    public static Map<String,SysModel> getSysModelMap(){
+        return new HashMap<>(SysModelMap);
+    }
+    /**
+     * 取得模块定义
+     * */
+    public static SysModel getSysModel(String modelCode){
+        return SysModelMap.get(modelCode);
     }
 }
