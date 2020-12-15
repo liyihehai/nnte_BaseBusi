@@ -286,7 +286,7 @@ public class JedisComponent {
         }
         if (json != null)
             try {
-                List<T> tmpList = new ArrayList<>();
+                List<T> tmpList = new ArrayList<T>();
                 return JsonUtil.jsonToBean(json, tmpList.getClass());
             } catch (Exception e) {
                 BaseBusiComponent.logError(logInterface,e);
