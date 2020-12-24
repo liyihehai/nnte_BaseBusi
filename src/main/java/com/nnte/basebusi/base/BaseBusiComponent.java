@@ -209,6 +209,8 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                         throw new BusiException("功能模块权限为空:PATH="+fe.getPath());
                     if (SysRulerMEnterMap.get(fe.getRoleRuler())!=null)
                         throw new BusiException("功能模块权限重复:"+fe.getRoleRuler());
+                    if (SystemRoleMap==null || SystemRoleMap.size()<=0)
+                        throw new BusiException("系统角色定义SystemRoleMap为空");
                     SysRulerMEnterMap.put(fe.getRoleRuler(),fe);
                     String roleCode = fe.getSysRole();
                     if (StringUtils.isNotEmpty(roleCode)){
@@ -225,7 +227,8 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                                 sr = newSr;
                             }
                             sr.getRulerMap().put(fe.getRoleRuler(),fe.getName());
-                        }
+                        }else
+                            throw new BusiException("从SystemRoleMap找到系统角色名称");
                     }
                     if (SysModelMap.get(fe.getModuleCode())==null){
                         //需要初始化模块定义
