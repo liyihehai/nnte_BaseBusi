@@ -1,21 +1,18 @@
 package com.nnte.basebusi.base;
 
 import com.nnte.basebusi.annotation.*;
-import com.nnte.basebusi.entity.AppRegistry;
-import com.nnte.basebusi.entity.MEnter;
-import com.nnte.basebusi.entity.SysModel;
-import com.nnte.basebusi.entity.SysRole;
+import com.nnte.basebusi.entity.*;
 import com.nnte.basebusi.excption.BusiException;
 import com.nnte.basebusi.excption.ExpLogInterface;
 import com.nnte.framework.annotation.ConfigLoad;
-import com.nnte.framework.base.BaseNnte;
-import com.nnte.framework.base.ConfigInterface;
-import com.nnte.framework.base.DBSchemaBase;
-import com.nnte.framework.base.SpringContextHolder;
+import com.nnte.framework.annotation.DBSchemaInterface;
+import com.nnte.framework.base.*;
 import com.nnte.framework.entity.KeyValue;
 import com.nnte.framework.utils.DateUtils;
 import com.nnte.framework.utils.FileLogUtil;
+import com.nnte.framework.utils.NumberUtil;
 import com.nnte.framework.utils.StringUtils;
+import com.zaxxer.hikari.HikariConfig;
 import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.Field;
@@ -53,7 +50,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
      * */
     private static TreeMap<String, SysModel> SysModelMap = new TreeMap<>();
     /**
-     * 取本地配置接口
+     * 取APP应用程序本地配置接口，通过本接口使组件可以反向取得应用程序的配置数据
      * */
     @ConfigLoad
     public ConfigInterface appConfig;
@@ -189,7 +186,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
     /**
      * 装载系统的模块入口定义及系统权限定义
      * */
-    public static void loadSystemFuntionEnters(Map<String, Object> SystemRoleMap) throws BusiException{
+    public static void loadSystemFuntionEnters() throws BusiException{
         ApplicationContext sch=SpringContextHolder.getApplicationContext();
         String[] names=sch.getBeanDefinitionNames();
         for(String beanName:names){
@@ -209,30 +206,29 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
                         throw new BusiException("功能模块权限为空:PATH="+fe.getPath());
                     if (SysRulerMEnterMap.get(fe.getRoleRuler())!=null)
                         throw new BusiException("功能模块权限重复:"+fe.getRoleRuler());
-                    if (SystemRoleMap==null || SystemRoleMap.size()<=0)
-                        throw new BusiException("系统角色定义SystemRoleMap为空");
                     SysRulerMEnterMap.put(fe.getRoleRuler(),fe);
                     String roleCode = fe.getSysRole();
                     if (StringUtils.isNotEmpty(roleCode)){
-                        String roleName=StringUtils.defaultString(SystemRoleMap.get(roleCode));
-                        if (StringUtils.isNotEmpty(roleName)){
-                            SysRole sr=SysRoleRulerMap.get(roleCode);
-                            if (sr==null){
-                                SysRole newSr=new SysRole();
-                                newSr.setRoleCode(roleCode);
-                                newSr.setRoleName(roleName);
-                                Map<String,String> rulerMap = new HashMap<>();
-                                newSr.setRulerMap(rulerMap);
-                                SysRoleRulerMap.put(roleCode,newSr);
-                                sr = newSr;
-                            }
-                            sr.getRulerMap().put(fe.getRoleRuler(),fe.getName());
-                        }else
-                            throw new BusiException("从SystemRoleMap找到系统角色名称");
+                        String roleName=StringUtils.defaultString(AppRegistry.getSysRoleName(roleCode));
+                        if (StringUtils.isEmpty(roleName)){
+                            roleName = roleCode;
+                            AppRegistry.setSysRoleName(roleCode,roleName);
+                        }
+                        SysRole sr=SysRoleRulerMap.get(roleCode);
+                        if (sr==null){
+                            SysRole newSr=new SysRole();
+                            newSr.setRoleCode(roleCode);
+                            newSr.setRoleName(roleName);
+                            Map<String,String> rulerMap = new HashMap<>();
+                            newSr.setRulerMap(rulerMap);
+                            SysRoleRulerMap.put(roleCode,newSr);
+                            sr = newSr;
+                        }
+                        sr.getRulerMap().put(fe.getRoleRuler(),fe.getName());
                     }
                     if (SysModelMap.get(fe.getModuleCode())==null){
                         //需要初始化模块定义
-                        String modelName=AppRegistry.getModuleMap().get(fe.getModuleCode());
+                        String modelName=AppRegistry.getAppModuleName(fe.getModuleCode());
                         if (StringUtils.isEmpty(modelName))
                             throw new BusiException("模块编号"+fe.getModuleCode()+"没有通过应用注册!");
                         SysModel newSysModel = new SysModel();
@@ -269,7 +265,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
         //AppInitInterface接口启动模块注册回调
         if (AppRegistry.getAppInitInterface()!=null){
             AppRegistry.getAppInitInterface().onRegisterFunctions(AppRegistry.getAppCode(),
-                    AppRegistry.getAppName(),AppRegistry.getModuleMap(),getSystemModuleEnters());
+                    AppRegistry.getAppName(),AppRegistry.getAppModuleNameMap(),getSystemModuleEnters());
         }
         BaseNnte.outConsoleLog("加载系统入口函数信息......("+MEnterMap.size()+")");
     }
@@ -372,5 +368,41 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
      * */
     public static SysModel getSysModel(String modelCode){
         return SysModelMap.get(modelCode);
+    }
+
+    /**
+     * 创建一个数据源
+     * */
+    public static void createDataBaseSource(Class mainCompClass,
+                                            DBSchemaInterface DBBase,
+                                            String DBSrcName,
+                                            String mapperPath,
+                                            boolean isDefault,
+                                            DBSrcConfig srcConfig) throws BusiException{
+        DynamicDatabaseSourceHolder dynamicDatabaseSourceHolder = SpringContextHolder.getBean(DynamicDatabaseSourceHolder.class);
+        String[] dbTypes=dynamicDatabaseSourceHolder.queryDBTypes();
+        if (dbTypes==null || dbTypes.length<=0)
+            dynamicDatabaseSourceHolder.loadDBSchemaInterface();
+        DynamicDatabaseSourceHolder.dbsourceSqlSessionFactory dbsf=dynamicDatabaseSourceHolder.getDBsrcSSF(DBSrcName);
+        if (dbsf!=null)
+            throw new BusiException(10002,"已经存在名称为："+DBSrcName+"的数据源", BusiException.ExpLevel.ERROR);
+        if (isDefault){
+            dbsf = dynamicDatabaseSourceHolder.getDefaultDBsrcSSF();
+            if (dbsf!=null)
+                throw new BusiException(10003,"应用不能定义多个默认数据源", BusiException.ExpLevel.ERROR);
+        }
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName(srcConfig.getDBDriverClassName());
+        config.setJdbcUrl(DBBase.makeJDBCUrl(srcConfig.getDBIp(), NumberUtil.getDefaultLong(srcConfig.getDBPort()),
+                srcConfig.getDBSchema()));
+        config.setUsername(srcConfig.getDBUser());
+        config.setPassword(srcConfig.getDBPassword());
+        config.setMinimumIdle(srcConfig.getMinimumIdle());
+        config.setMaximumPoolSize(srcConfig.getMaximumPoolSize());
+        config.setIdleTimeout(srcConfig.getIdleTimeout());
+        config.setConnectionTestQuery(srcConfig.getConnectionTestQuery());
+        List<String> mappers=new ArrayList<>();
+        mappers.add(mapperPath);
+        dynamicDatabaseSourceHolder.initDataBaseSource(DBSrcName,config,mappers, mainCompClass,isDefault);
     }
 }

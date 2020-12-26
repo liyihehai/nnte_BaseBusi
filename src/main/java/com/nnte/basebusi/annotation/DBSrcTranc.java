@@ -12,9 +12,6 @@ import java.lang.annotation.*;
 * @autocommit 标识是否自动提交，如果为fals，切面程序将在程序执行成功后手动提交
 * */
 public @interface DBSrcTranc {
-    public static final String Config_DBSrc_Name = "sqlite3db";
-    //public static final String Work_DBSrc_Name = "mysqldb";
-    public static final String Work_DBSrc_Name = "postgresqldb";
-    String value() default Work_DBSrc_Name;
+    String value();
     boolean autocommit() default true;
 }
