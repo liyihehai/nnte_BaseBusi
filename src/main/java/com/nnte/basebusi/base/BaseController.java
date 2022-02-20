@@ -1,6 +1,7 @@
 package com.nnte.basebusi.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.nnte.basebusi.entity.ResponseResult;
 import com.nnte.basebusi.excption.BusiException;
 import com.nnte.framework.entity.KeyValue;
 import com.nnte.framework.utils.FreeMarkertUtil;
@@ -173,5 +174,28 @@ public class BaseController {
         } catch (Exception e) {
             throw new BusiException(e,9999, BusiException.ExpLevel.ERROR);
         }
+    }
+
+    public ResponseResult error(String message){
+        ResponseResult ret = new ResponseResult();
+        ret.setSuccess(false);
+        ret.setShowType(0);
+        ret.setErrorCode("1");
+        ret.setErrorMessage(message);
+        return ret;
+    }
+    public ResponseResult success(String message){
+        ResponseResult ret = new ResponseResult();
+        ret.setSuccess(true);
+        ret.setShowType(0);
+        ret.setErrorCode("0");
+        ret.setErrorMessage(message);
+        return ret;
+    }
+
+    public ResponseResult success(String message,Object data){
+        ResponseResult ret = success(message);
+        ret.setData(data);
+        return ret;
     }
 }
