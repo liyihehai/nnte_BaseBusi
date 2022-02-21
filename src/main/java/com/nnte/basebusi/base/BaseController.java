@@ -176,7 +176,7 @@ public class BaseController {
         }
     }
 
-    public ResponseResult error(String message){
+    public static ResponseResult error(String message){
         ResponseResult ret = new ResponseResult();
         ret.setSuccess(false);
         ret.setShowType(0);
@@ -184,7 +184,7 @@ public class BaseController {
         ret.setErrorMessage(message);
         return ret;
     }
-    public ResponseResult success(String message){
+    public static ResponseResult success(String message){
         ResponseResult ret = new ResponseResult();
         ret.setSuccess(true);
         ret.setShowType(0);
@@ -193,7 +193,7 @@ public class BaseController {
         return ret;
     }
 
-    public ResponseResult success(String message,Object data){
+    public static ResponseResult success(String message,Object data){
         ResponseResult ret = success(message);
         ret.setData(data);
         return ret;
