@@ -3,6 +3,7 @@ package com.nnte.basebusi.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nnte.basebusi.entity.ResponseResult;
 import com.nnte.basebusi.excption.BusiException;
+import com.nnte.basebusi.excption.ExpLogInterface;
 import com.nnte.framework.entity.KeyValue;
 import com.nnte.framework.utils.FreeMarkertUtil;
 import com.nnte.framework.utils.JsonUtil;
@@ -19,7 +20,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BaseController {
+public class BaseController implements ExpLogInterface {
+
+    private String loggername;  //日志位置
+    private String logrootpath; //日志路径
+
+    public BaseController(){
+        setLoggerName(this.getClass().getSimpleName());//路径默认是组件名称
+    }
+    public BaseController(String loggername){
+        setLoggerName(loggername);
+    }
 
     public void printMsg(HttpServletResponse resp, String json) {
         try {
@@ -202,5 +213,41 @@ public class BaseController {
         ResponseResult ret = success(message);
         ret.setData(data);
         return ret;
+    }
+
+    /**
+     * 设置组件日志打印路径
+     * */
+    public void setLoggerName(String loggerName){
+        loggername = loggerName;
+        logrootpath= System.getProperty("user.home")+"/logs/"+loggername;
+    }
+
+    @Override
+    public void logException(BusiException busiExp) {
+        busiExp.printException(this,"logException");
+    }
+
+    @Override
+    public String getLoggername() {
+        return loggername;
+    }
+
+    @Override
+    public String getLogrootpath() {
+        return logrootpath;
+    }
+    /**
+     * 统一返回错误结果
+     * */
+    public ResponseResult onException(Exception e){
+        if (e instanceof BusiException){
+            BusiException be = (BusiException)e;
+            logException(be);
+            return error(be.getExpCode().toString(),e.getMessage());
+        }else{
+            e.printStackTrace();
+            return error("-1",e.getMessage());
+        }
     }
 }
