@@ -177,13 +177,18 @@ public class BaseController {
     }
 
     public static ResponseResult error(String message){
+        return error("1",message);
+    }
+
+    public static ResponseResult error(String errCode,String message){
         ResponseResult ret = new ResponseResult();
         ret.setSuccess(false);
         ret.setShowType(0);
-        ret.setErrorCode("1");
+        ret.setErrorCode(errCode);
         ret.setErrorMessage(message);
         return ret;
     }
+
     public static ResponseResult success(String message){
         ResponseResult ret = new ResponseResult();
         ret.setSuccess(true);
