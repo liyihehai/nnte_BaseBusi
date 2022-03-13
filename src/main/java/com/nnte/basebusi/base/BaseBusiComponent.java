@@ -373,10 +373,8 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
     /**
      * 创建一个数据源
      * */
-    public static void createDataBaseSource(Class mainCompClass,
-                                            DBSchemaInterface DBBase,
+    public static void createDataBaseSource(DBSchemaInterface DBBase,
                                             String DBSrcName,
-                                            String mapperPath,
                                             boolean isDefault,
                                             DBSrcConfig srcConfig) throws BusiException{
         DynamicDatabaseSourceHolder dynamicDatabaseSourceHolder = SpringContextHolder.getBean(DynamicDatabaseSourceHolder.class);
@@ -401,8 +399,6 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
         config.setMaximumPoolSize(srcConfig.getMaximumPoolSize());
         config.setIdleTimeout(srcConfig.getIdleTimeout());
         config.setConnectionTestQuery(srcConfig.getConnectionTestQuery());
-        List<String> mappers=new ArrayList<>();
-        mappers.add(mapperPath);
-        dynamicDatabaseSourceHolder.initDataBaseSource(DBSrcName,config,mappers, mainCompClass,isDefault);
+        dynamicDatabaseSourceHolder.initDataBaseSource(DBSrcName,config,isDefault);
     }
 }
