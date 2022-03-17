@@ -3,19 +3,16 @@ package com.nnte.basebusi.base;
 import com.nnte.basebusi.annotation.DBSrcTranc;
 import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.base.BaseService;
-import com.nnte.framework.base.ConnSqlSessionFactory;
-import com.nnte.framework.base.DynamicDatabaseSourceHolder;
+import com.nnte.framework.utils.LogUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.sql.Connection;
 import java.util.Map;
 
 @Aspect
@@ -52,10 +49,10 @@ public class WorkDBAopAspect {
             BaseService.setThreadLocalSession(value,autocommit);
             ret =  (Map<String,Object>)pjp.proceed();
             return ret;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             BaseNnte.setRetFalse(ret,9999,"系统异常[ConfDBAopAspect:doAround]");
             BaseNnte.outConsoleLog(ret.get("msg").toString());
-            e.printStackTrace();
+            LogUtil.logExp(e);
             return ret;
         } finally {
             BaseService.removeThreadLocalSession(ret);

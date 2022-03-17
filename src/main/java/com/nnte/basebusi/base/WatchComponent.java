@@ -3,6 +3,7 @@ package com.nnte.basebusi.base;
 import com.nnte.basebusi.annotation.BusiLogAttr;
 import com.nnte.basebusi.annotation.WatchInterface;
 import com.nnte.basebusi.excption.BusiException;
+import com.nnte.framework.utils.LogUtil;
 import com.nnte.framework.utils.ThreadUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,7 +43,7 @@ public class WatchComponent extends BaseBusiComponent implements Runnable{
      * */
     public void registerWatchItem(WatchInterface inter, int index,int execTimes) throws BusiException {
         if (watchRegMap.get(index) != null)
-            throw new BusiException(1, "项目组件序号已存在", BusiException.ExpLevel.ERROR);
+            throw new BusiException(1, "项目组件序号已存在", LogUtil.LogLevel.warn);
         WatchRegisterItem item = new WatchRegisterItem(inter,index,inter.getClass().getName(),execTimes);
         watchRegMap.put(index, item);
     }
@@ -92,7 +93,7 @@ public class WatchComponent extends BaseBusiComponent implements Runnable{
                     try {
                         item.itemInterface.runWatch();
                     }catch (Exception e){
-                        BusiException be=new BusiException(e,3999,BusiException.ExpLevel.ERROR);
+                        BusiException be=new BusiException(e,3999, LogUtil.LogLevel.error);
                         logException(be);
                     }
                     int exect=item.getExecTimes();

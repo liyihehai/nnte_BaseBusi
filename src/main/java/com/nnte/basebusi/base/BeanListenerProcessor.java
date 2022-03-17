@@ -20,7 +20,6 @@ public class BeanListenerProcessor implements BeanPostProcessor {
         BaseNnte.outConsoleLog("设置组件[" + className + "]创建完成!");
         BusiLogAttr logAttr = bean.getClass().getAnnotation(BusiLogAttr.class);
         if (logAttr!=null && bean instanceof BaseBusiComponent){
-            ((BaseBusiComponent) bean).setLoggerName(logAttr.value());
             BaseNnte.outConsoleLog("设置组件["+className+"]日志属性："+logAttr.value());
         }
         return bean;

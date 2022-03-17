@@ -8,6 +8,7 @@ import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.entity.AuthTokenDetailsDTO;
 import com.nnte.framework.utils.DateUtils;
 import com.nnte.framework.utils.JwtUtils;
+import com.nnte.framework.utils.LogUtil;
 import com.nnte.framework.utils.StringUtils;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -68,7 +69,7 @@ public interface BaseAuthInterface {
             }
             ret.put("OperatorInfo", opeInfo);
         } catch (Exception e) {
-            throw new BusiException(e,1009, BusiException.ExpLevel.WARN);
+            throw new BusiException(e,1009);
         }
         return ret;
     }
@@ -93,19 +94,18 @@ public interface BaseAuthInterface {
                 if (StringUtils.isEmpty(me.getSysRole()) || StringUtils.isEmpty(me.getRoleRuler())) {
                     if (pfo.getOperatorType()==1)
                         return;//如果操作员是超级管理员，直接放行
-                    throw new BusiException(10101,"只有超级管理员才能进入模块[" + me.getName() + "]",
-                            BusiException.ExpLevel.WARN);
+                    throw new BusiException(10101,"只有超级管理员才能进入模块[" + me.getName() + "]", LogUtil.LogLevel.warn);
                 } else {
                     //如果模块有权限限制，当前操作员不是超级管理员，则需要校验权限，否则不需要校验
                     if (!(pfo.getOperatorType()==1)) {
                         if (!isOpeModelValid(pfo,me))
                             throw new BusiException(10101,"当前操作员没有权限进入模块[" + me.getName() + "]",
-                                    BusiException.ExpLevel.WARN);
+                                    LogUtil.LogLevel.warn);
                     }
                 }
             }
         } catch (Exception e) {
-            throw new BusiException(10100, "模块权限校验失败(" + e.getMessage() + ")", BusiException.ExpLevel.WARN);
+            throw new BusiException(10100, "模块权限校验失败(" + e.getMessage() + ")", LogUtil.LogLevel.warn);
         }
     }
 }

@@ -4,6 +4,6 @@ package com.nnte.basebusi.excption;
  * */
 public interface ExpLogInterface {
     void logException(BusiException busiExp);
-    String getLoggername();
-    String getLogrootpath();
+    //String getLoggername();
+    //String getLogrootpath();
 }

@@ -5,10 +5,7 @@ import com.nnte.basebusi.entity.ResponseResult;
 import com.nnte.basebusi.excption.BusiException;
 import com.nnte.basebusi.excption.ExpLogInterface;
 import com.nnte.framework.entity.KeyValue;
-import com.nnte.framework.utils.FreeMarkertUtil;
-import com.nnte.framework.utils.JsonUtil;
-import com.nnte.framework.utils.MapUtil;
-import com.nnte.framework.utils.StringUtils;
+import com.nnte.framework.utils.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,23 +19,13 @@ import java.util.Map;
 
 public class BaseController implements ExpLogInterface {
 
-    private String loggername;  //日志位置
-    private String logrootpath; //日志路径
-
-    public BaseController(){
-        setLoggerName(this.getClass().getSimpleName());//路径默认是组件名称
-    }
-    public BaseController(String loggername){
-        setLoggerName(loggername);
-    }
-
     public void printMsg(HttpServletResponse resp, String json) {
         try {
             resp.setContentType("text/html;charset=utf-8");
             resp.getWriter().print(json);
             resp.getWriter().close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.logExp(e);
         }
         return;
     }
@@ -52,7 +39,7 @@ public class BaseController implements ExpLogInterface {
             resp.getWriter().println(msg);
             resp.getWriter().close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.logExp(e);
         }
         return;
     }
@@ -118,7 +105,7 @@ public class BaseController implements ExpLogInterface {
                     try {
                         inet = InetAddress.getLocalHost();
                     } catch (UnknownHostException uhe) {
-                        uhe.printStackTrace();
+                        LogUtil.logExp(uhe);
                         return request.getRemoteAddr();
                     }
                     ipAddress= inet.getHostAddress();
@@ -145,7 +132,7 @@ public class BaseController implements ExpLogInterface {
             response.getWriter().print(content);
             response.getWriter().close();
         }catch (IOException ioe){
-            throw new BusiException(ioe,1005, BusiException.ExpLevel.ERROR);
+            throw new BusiException(ioe,1005, LogUtil.LogLevel.error);
         }
     }
     /**
@@ -158,7 +145,7 @@ public class BaseController implements ExpLogInterface {
             response.getWriter().print(json);
             response.getWriter().close();
         } catch (IOException ioe) {
-            throw new BusiException(ioe,1005, BusiException.ExpLevel.ERROR);
+            throw new BusiException(ioe,1005, LogUtil.LogLevel.error);
         }
     }
 
@@ -183,7 +170,7 @@ public class BaseController implements ExpLogInterface {
                 MapUtil.copyFromSrcMap(tmpMap,_dim);
             }
         } catch (Exception e) {
-            throw new BusiException(e,9999, BusiException.ExpLevel.ERROR);
+            throw new BusiException(e,9999, LogUtil.LogLevel.error);
         }
     }
 
@@ -218,25 +205,18 @@ public class BaseController implements ExpLogInterface {
     /**
      * 设置组件日志打印路径
      * */
+    /*
     public void setLoggerName(String loggerName){
         loggername = loggerName;
         logrootpath= System.getProperty("user.home")+"/logs/"+loggername;
     }
+    */
 
     @Override
     public void logException(BusiException busiExp) {
-        busiExp.printException(this,"logException");
+        busiExp.printException();
     }
 
-    @Override
-    public String getLoggername() {
-        return loggername;
-    }
-
-    @Override
-    public String getLogrootpath() {
-        return logrootpath;
-    }
     /**
      * 统一返回错误结果
      * */
@@ -246,7 +226,7 @@ public class BaseController implements ExpLogInterface {
             logException(be);
             return error(be.getExpCode().toString(),e.getMessage());
         }else{
-            e.printStackTrace();
+            LogUtil.logExp(e);
             return error("-1",e.getMessage());
         }
     }

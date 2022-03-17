@@ -14,6 +14,7 @@ import java.lang.annotation.*;
  * 注解的组件默认日志打印位置是其组件名称，本注解目的是
  * 汇总有限组件的日志到同一文件内
  */
+@Deprecated
 public @interface BusiLogAttr {
     String value() default  "BusiCommonLog";
 }
