@@ -1,6 +1,6 @@
 package com.nnte.basebusi.annotation;
 
-import com.nnte.basebusi.base.BaseBusiComponent;
+import com.nnte.basebusi.base.BaseComponent;
 import com.nnte.basebusi.entity.MEnter;
 import com.nnte.basebusi.entity.OperatorInfo;
 import com.nnte.basebusi.excption.BusiException;
@@ -84,7 +84,7 @@ public interface BaseAuthInterface {
      */
     default void checkRequestModule(OperatorInfo opeInfo, String path) throws BusiException {
         try {
-            MEnter me = BaseBusiComponent.getSystemMEnter(path);
+            MEnter me = BaseComponent.getSystemMEnter(path);
             if (me != null) {
                 OperatorInfo pfo = queryOperatorInfo(opeInfo);
                 if (!isOperatorStateValid(pfo)) {

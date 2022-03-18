@@ -1,6 +1,7 @@
 package com.nnte.basebusi.base;
 
-import com.nnte.basebusi.excption.ExpLogInterface;
+import com.nnte.basebusi.annotation.BusiLogAttr;
+import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.base.NameLockComponent;
 import com.nnte.framework.utils.JsonUtil;
 import com.nnte.framework.utils.SerializeUtil;
@@ -23,16 +24,13 @@ import java.util.concurrent.locks.ReentrantLock;
 @Component
 @ConfigurationProperties(prefix = "redis")
 @PropertySource(value = "classpath:redis.properties")
-
-public class JedisComponent {
+@BusiLogAttr(BaseBusi.Logger_Name)
+public class JedisComponent extends BaseNnte {
 
     @Autowired
     private NameLockComponent nameLock;
     private static JedisPool jedis_rmq;
     private static JedisPool pool;
-
-    @Setter
-    private ExpLogInterface logInterface = null;
 
     @Getter
     @Setter
@@ -45,7 +43,7 @@ public class JedisComponent {
     private String localHostAbstractName;
 
     public void initJedisCom() {
-        BaseBusiComponent.logInfo(logInterface, "开始初始化Jedis.......");
+        outLogInfo("开始初始化Jedis.......");
         JedisPoolConfig config = new JedisPoolConfig();
         //连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true
         config.setBlockWhenExhausted(true);
@@ -80,7 +78,7 @@ public class JedisComponent {
             pool = new JedisPool(config, getRedisServer(),
                     Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT, getRedisPws());
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface, e);
+            BaseLog.outLogExp(e);
         }
 
         //以下是消息服务器专用pool
@@ -118,9 +116,9 @@ public class JedisComponent {
             jedis_rmq = new JedisPool(config2, getRedisServer(),
                     Protocol.DEFAULT_PORT, Protocol.DEFAULT_TIMEOUT, getRedisPws());
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         }
-        BaseBusiComponent.logInfo(logInterface,"Jedis init success!IP=" + getRedisServer());
+        outLogInfo("Jedis init success!IP=" + getRedisServer());
     }
 
     public Map<String, String> getByPattern(String pkey) {
@@ -137,7 +135,7 @@ public class JedisComponent {
                 map.put(key, value);
             }
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -151,7 +149,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             jedis.flushAll();
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -167,7 +165,7 @@ public class JedisComponent {
             if (listTime != null && listTime.size() > 0)
                 return Long.valueOf(listTime.get(0));
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -181,7 +179,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             return jedis.get(pkey);
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -201,7 +199,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             jedis.setex(pkey, expired_time, v);
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -214,7 +212,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             jedis.del(pkey);
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -228,7 +226,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             r = jedis.setex(key, seconds, JsonUtil.beanToJson(o));
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -243,7 +241,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             json = jedis.get(key);
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -252,7 +250,7 @@ public class JedisComponent {
             try {
                 return JsonUtil.jsonToBean(json, pojoCalss);
             } catch (Exception e) {
-                BaseBusiComponent.logError(logInterface,e);
+                BaseLog.outLogExp(e);
             }
         return null;
     }
@@ -264,7 +262,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             r = jedis.setex(key, seconds, JsonUtil.beanToJson(o));
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -279,7 +277,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             json = jedis.get(key);
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -289,7 +287,7 @@ public class JedisComponent {
                 List<T> tmpList = new ArrayList<T>();
                 return JsonUtil.jsonToBean(json, tmpList.getClass());
             } catch (Exception e) {
-                BaseBusiComponent.logError(logInterface,e);
+                BaseLog.outLogExp(e);
             }
         return null;
     }
@@ -301,7 +299,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             r = jedis.setex(key.getBytes(), seconds, SerializeUtil.serialize(o));
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -315,7 +313,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             return SerializeUtil.unserialize(jedis.get(key.getBytes()));
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -329,7 +327,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             jedis.del(pkey.getBytes());
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -342,7 +340,7 @@ public class JedisComponent {
             jedis = pool.getResource();
             return jedis.incrBy(key, num);
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -361,7 +359,7 @@ public class JedisComponent {
             if (sucSetLock)
                 return setRedisLock(lockName, seconds);
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (sucSetLock)
                 safeLock.unlock();
@@ -390,7 +388,7 @@ public class JedisComponent {
                 reqTimes++;
             } while (reqTimes * interval < seconds * 1000);
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();
@@ -420,7 +418,7 @@ public class JedisComponent {
                 }
             }
         } catch (Exception e) {
-            BaseBusiComponent.logError(logInterface,e);
+            BaseLog.outLogExp(e);
         } finally {
             if (jedis != null)
                 jedis.close();

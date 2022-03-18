@@ -3,7 +3,6 @@ package com.nnte.basebusi.base;
 import com.nnte.basebusi.annotation.*;
 import com.nnte.basebusi.entity.*;
 import com.nnte.basebusi.excption.BusiException;
-import com.nnte.basebusi.excption.ExpLogInterface;
 import com.nnte.framework.annotation.ConfigLoad;
 import com.nnte.framework.annotation.DBSchemaInterface;
 import com.nnte.framework.base.*;
@@ -21,7 +20,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class BaseBusiComponent implements ExpLogInterface {
+public abstract class BaseComponent extends BaseBusi {
     /**
      * 定义系统功能入口函数
      * key:功能路径；MEnter：功能对象
@@ -45,30 +44,6 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
      */
     @ConfigLoad
     public ConfigInterface appConfig;
-
-    /**
-     * 设置组件日志打印路径
-     */
-//    public void setLoggerName(String loggerName){
-//        loggername = loggerName;
-//        logrootpath= System.getProperty("user.home")+"/logs/"+loggername;
-//    }
-    @Override
-    public void logException(BusiException busiExp) {
-        busiExp.printException();
-    }
-
-    /**
-     * 通过本组件输出一条日志信息到文件,同时打印到控制台
-     */
-    public void logFileMsg(String logMsg) {
-        logFileMsg2(logMsg, "logFileMsg", 1);
-    }
-
-    public void logFileMsg2(String logMsg, String methodName, int offLine) {
-        String toFileMsg = BaseNnte.outConsoleLog(logMsg, methodName, offLine);
-        LogUtil.log(LogUtil.LogLevel.info, toFileMsg);
-    }
 
     /**
      * 检测对象属性的值是否正确，本函数一般用于输入检测
@@ -254,7 +229,7 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
             AppRegistry.getAppInitInterface().onRegisterFunctions(AppRegistry.getAppCode(),
                     AppRegistry.getAppName(), AppRegistry.getAppModuleNameMap(), getSystemModuleEnters());
         }
-        BaseNnte.outConsoleLog("加载系统入口函数信息......(" + MEnterMap.size() + ")");
+        BaseLog.logInfo("加载系统入口函数信息......(" + MEnterMap.size() + ")");
     }
 
     /**
@@ -312,35 +287,6 @@ public abstract class BaseBusiComponent implements ExpLogInterface {
             return sr.getRulerMap();
         }
         return null;
-    }
-
-    /**
-     * 通过接口打印日志：INFO
-     */
-    public static void logInfo(ExpLogInterface logInterface, String info) {
-        if (logInterface != null) {
-            LogUtil.log(LogUtil.LogLevel.info, info);
-        }
-    }
-
-    /**
-     * 通过接口打印日志：WARN
-     */
-    public static void logWarn(ExpLogInterface logInterface, String warn) {
-        if (logInterface != null) {
-            BusiException be = new BusiException(2000, warn, LogUtil.LogLevel.warn);
-            be.printException();
-        }
-    }
-
-    /**
-     * 通过接口打印日志：ERROR
-     */
-    public static void logError(ExpLogInterface logInterface, Exception e) {
-        if (logInterface != null) {
-            BusiException be = new BusiException(e, 3000, LogUtil.LogLevel.error);
-            be.printException();
-        }
     }
 
     /**

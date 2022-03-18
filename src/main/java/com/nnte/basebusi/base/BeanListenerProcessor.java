@@ -8,7 +8,8 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class BeanListenerProcessor implements BeanPostProcessor {
+@BusiLogAttr(BaseBusi.Logger_Name)
+public class BeanListenerProcessor extends BaseNnte implements BeanPostProcessor {
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         return bean;
@@ -16,11 +17,17 @@ public class BeanListenerProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        String className=bean.getClass().getSimpleName();
-        BaseNnte.outConsoleLog("设置组件[" + className + "]创建完成!");
-        BusiLogAttr logAttr = bean.getClass().getAnnotation(BusiLogAttr.class);
-        if (logAttr!=null && bean instanceof BaseBusiComponent){
-            BaseNnte.outConsoleLog("设置组件["+className+"]日志属性："+logAttr.value());
+        Class clazz=bean.getClass();
+        String className=clazz.getSimpleName();
+        outLogInfo("设置组件[" + className + "]创建完成!");
+        if (bean instanceof BaseNnte) {
+            BusiLogAttr logAttr = bean.getClass().getAnnotation(BusiLogAttr.class);
+            if (logAttr != null) {
+                String loggerName = logAttr.value();
+                BaseNnte BaseNntebean = (BaseNnte) bean;
+                BaseNntebean.setFrame_loggerName(loggerName);
+                BaseNntebean.outLogInfo("设置组件[" + className + "]日志属性：" + logAttr.value());
+            }
         }
         return bean;
     }

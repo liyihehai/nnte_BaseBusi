@@ -16,7 +16,7 @@ import java.util.TreeMap;
 
 @Component
 @BusiLogAttr("WatchComponent")
-public class WatchComponent extends BaseBusiComponent implements Runnable{
+public class WatchComponent extends BaseComponent implements Runnable{
 
     @Getter
     private int runState = 0;   //运行时状态：0未运行，1：运行时，2：停顿时
@@ -53,7 +53,7 @@ public class WatchComponent extends BaseBusiComponent implements Runnable{
     public void unRegisterWatchItem(int index){
         WatchRegisterItem item=watchRegMap.get(index);
         if (item != null){
-            BaseBusiComponent.logInfo(this,"守护组件注销："+item.getItemName());
+            outLogInfo("守护组件注销："+item.getItemName());
             watchRegMap.remove(index);
         }
     }
@@ -68,7 +68,7 @@ public class WatchComponent extends BaseBusiComponent implements Runnable{
 
     @Override
     public void run() {
-        BaseBusiComponent.logInfo(this,"---- 平台守护线程启动  ----");
+        BaseLog.logInfo("---- 平台守护线程启动  ----");
         while (isContinue) {
             runState = 1;
             watchProcess();
@@ -79,7 +79,7 @@ public class WatchComponent extends BaseBusiComponent implements Runnable{
                 break;
         }
         runState = 0;
-        BaseBusiComponent.logInfo(this,"---- 平台守护线程结束  ----");
+        BaseLog.logInfo("---- 平台守护线程结束  ----");
     }
 
     /**
@@ -94,7 +94,7 @@ public class WatchComponent extends BaseBusiComponent implements Runnable{
                         item.itemInterface.runWatch();
                     }catch (Exception e){
                         BusiException be=new BusiException(e,3999, LogUtil.LogLevel.error);
-                        logException(be);
+                        BaseLog.outLogExp(be);
                     }
                     int exect=item.getExecTimes();
                     if (exect>0){

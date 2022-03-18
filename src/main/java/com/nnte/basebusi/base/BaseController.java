@@ -3,7 +3,7 @@ package com.nnte.basebusi.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nnte.basebusi.entity.ResponseResult;
 import com.nnte.basebusi.excption.BusiException;
-import com.nnte.basebusi.excption.ExpLogInterface;
+import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.entity.KeyValue;
 import com.nnte.framework.utils.*;
 
@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BaseController implements ExpLogInterface {
+public abstract class BaseController extends BaseBusi{
 
     public void printMsg(HttpServletResponse resp, String json) {
         try {
@@ -25,7 +25,7 @@ public class BaseController implements ExpLogInterface {
             resp.getWriter().print(json);
             resp.getWriter().close();
         } catch (Exception e) {
-            LogUtil.logExp(e);
+            onException(e);
         }
         return;
     }
@@ -39,7 +39,7 @@ public class BaseController implements ExpLogInterface {
             resp.getWriter().println(msg);
             resp.getWriter().close();
         } catch (Exception e) {
-            LogUtil.logExp(e);
+            onException(e);
         }
         return;
     }
@@ -105,7 +105,7 @@ public class BaseController implements ExpLogInterface {
                     try {
                         inet = InetAddress.getLocalHost();
                     } catch (UnknownHostException uhe) {
-                        LogUtil.logExp(uhe);
+                        BaseLog.outLogExp(uhe);
                         return request.getRemoteAddr();
                     }
                     ipAddress= inet.getHostAddress();
@@ -203,30 +203,16 @@ public class BaseController implements ExpLogInterface {
     }
 
     /**
-     * 设置组件日志打印路径
-     * */
-    /*
-    public void setLoggerName(String loggerName){
-        loggername = loggerName;
-        logrootpath= System.getProperty("user.home")+"/logs/"+loggername;
-    }
-    */
-
-    @Override
-    public void logException(BusiException busiExp) {
-        busiExp.printException();
-    }
-
-    /**
      * 统一返回错误结果
      * */
     public ResponseResult onException(Exception e){
         if (e instanceof BusiException){
             BusiException be = (BusiException)e;
-            logException(be);
+            BaseLog.outLogExp(be);
             return error(be.getExpCode().toString(),e.getMessage());
         }else{
-            LogUtil.logExp(e);
+            BusiException newBe = new BusiException(e);
+            BaseLog.outLogExp(newBe);
             return error("-1",e.getMessage());
         }
     }

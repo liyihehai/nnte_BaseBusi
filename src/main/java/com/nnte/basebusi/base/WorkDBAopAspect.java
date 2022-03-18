@@ -1,5 +1,6 @@
 package com.nnte.basebusi.base;
 
+import com.nnte.basebusi.annotation.BusiLogAttr;
 import com.nnte.basebusi.annotation.DBSrcTranc;
 import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.base.BaseService;
@@ -17,7 +18,8 @@ import java.util.Map;
 
 @Aspect
 @Component
-public class WorkDBAopAspect {
+@BusiLogAttr(BaseBusi.Logger_Name)
+public class WorkDBAopAspect extends BaseNnte{
     /*
     @Autowired
     private DynamicDatabaseSourceHolder dynamicDSHolder;
@@ -45,18 +47,18 @@ public class WorkDBAopAspect {
             DBSrcTranc dbSrcTranc = method.getAnnotation(DBSrcTranc.class);
             String value = dbSrcTranc.value();
             boolean autocommit=dbSrcTranc.autocommit();
-            BaseNnte.outConsoleLog("WorkDBAopPointCut dataSrcName="+value+" start ...");
+            outLogDebug("WorkDBAopPointCut dataSrcName="+value+" start ...");
             BaseService.setThreadLocalSession(value,autocommit);
             ret =  (Map<String,Object>)pjp.proceed();
             return ret;
         } catch (Exception e) {
             BaseNnte.setRetFalse(ret,9999,"系统异常[ConfDBAopAspect:doAround]");
-            BaseNnte.outConsoleLog(ret.get("msg").toString());
-            LogUtil.logExp(e);
+            outLogError(ret.get("msg").toString());
+            BaseLog.outLogExp(e);
             return ret;
         } finally {
             BaseService.removeThreadLocalSession(ret);
-            BaseNnte.outConsoleLog("WorkDBAopPointCut finally ...");
+            outLogDebug("WorkDBAopPointCut finally ...");
         }
     }
 
