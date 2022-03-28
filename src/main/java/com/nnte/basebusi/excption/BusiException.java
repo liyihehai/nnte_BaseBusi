@@ -79,6 +79,7 @@ public class BusiException extends Exception{
      * 打印异常
      * */
     public void printException(){
-        LogUtil.logExp(callerLogger,expLevel,this);
+        //LogUtil.logExp(callerLogger,expLevel,this);
+        LogUtil.log(callerLogger,expLevel,"BusiException:"+this.getMessage());
     }
 }

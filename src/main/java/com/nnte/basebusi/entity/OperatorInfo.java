@@ -12,4 +12,7 @@ public class OperatorInfo {
     private String token;
     private String expireTime;      //YYYY-MM-DD hh:mm:ss
     private String loginTime;       //YYYY-MM-DD hh:mm:ss
+    public boolean isSupperOpe(){
+        return operatorType==1;
+    }
 }

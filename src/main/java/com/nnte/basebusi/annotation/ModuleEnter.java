@@ -24,9 +24,9 @@ public @interface ModuleEnter {
     String roleRuler() default "";  //角色权限(权限名称与入口函数名称相同)
     /**
      * 功能的模块定义
-     * 功能的路径实际为：App(应用) -> Module（模块） ->Function(功能)
+     * 功能的路径实际为：App(应用--应用代码由应用初始化提供) -> Module（模块） ->Function(功能)
      * */
-    String appCode();                       //应用编码
+    //String appCode();                     //应用编码
     String moduleCode();                    //模块编号
     String moduleVersion() default "1.0";   //模块版本
 }

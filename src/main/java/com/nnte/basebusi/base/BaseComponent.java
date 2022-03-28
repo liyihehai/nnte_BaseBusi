@@ -158,7 +158,7 @@ public abstract class BaseComponent extends BaseBusi {
                 ModuleEnter feAnno = m.getAnnotation(ModuleEnter.class);
                 if (feAnno != null) {
                     MEnter fe = new MEnter(feAnno.path(), feAnno.name(), feAnno.desc(), feAnno.sysRole(),
-                            feAnno.roleRuler(), feAnno.appCode(), feAnno.moduleCode(), feAnno.moduleVersion());
+                            feAnno.roleRuler(), AppRegistry.getAppCode(), feAnno.moduleCode(), feAnno.moduleVersion());
                     if (StringUtils.isEmpty(fe.getPath()))
                         throw new BusiException("功能模块路径为空");
                     if (MEnterMap.get(fe.getPath()) != null)
@@ -202,7 +202,8 @@ public abstract class BaseComponent extends BaseBusi {
                 }
             }
         }
-        //守护进程自动注册
+        //守护线程组件自动注册
+        BaseLog.logInfo("守护线程组件自动注册......");
         for (String beanName : names) {
             WatchComponent watchComponent = SpringContextHolder.getBean(WatchComponent.class);
             Object instanceBody = sch.getBean(beanName);
@@ -218,6 +219,7 @@ public abstract class BaseComponent extends BaseBusi {
             }
         }
         //启动实现了LoadModelLibTypeInterface接口的组件加载模块LibType
+        BaseLog.logInfo("组件加载模块LibType......");
         for (String beanName : names) {
             Object instanceBody = sch.getBean(beanName);
             if (instanceBody instanceof LoadModelLibTypeInterface) {
@@ -225,9 +227,20 @@ public abstract class BaseComponent extends BaseBusi {
             }
         }
         //AppInitInterface接口启动模块注册回调
+        BaseLog.logInfo("接口启动模块注册回调......");
         if (AppRegistry.getAppInitInterface() != null) {
             AppRegistry.getAppInitInterface().onRegisterFunctions(AppRegistry.getAppCode(),
                     AppRegistry.getAppName(), AppRegistry.getAppModuleNameMap(), getSystemModuleEnters());
+        }
+        //各个模块执行初始化
+        BaseLog.logInfo("各个模块执行初始化......");
+        for (String beanName : names) {
+            Object instanceBody = sch.getBean(beanName);
+            if (instanceBody instanceof ModuleInterface) {
+                ModuleInterface mi = (ModuleInterface) instanceBody;
+                BaseLog.logInfo("模块["+mi.getModuleJarName()+"]执行初始化......");
+                mi.initModule();
+            }
         }
         BaseLog.logInfo("加载系统入口函数信息......(" + MEnterMap.size() + ")");
     }
