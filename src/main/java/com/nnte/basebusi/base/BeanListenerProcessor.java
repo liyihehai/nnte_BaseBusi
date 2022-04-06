@@ -1,10 +1,19 @@
 package com.nnte.basebusi.base;
 
 import com.nnte.basebusi.annotation.BusiLogAttr;
+import com.nnte.basebusi.annotation.RootConfigProperties;
 import com.nnte.framework.base.BaseNnte;
+import com.nnte.framework.utils.BeanUtils;
+import com.nnte.framework.utils.FileUtil;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.support.EncodedResource;
+import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.stereotype.Component;
+
+import java.io.FileInputStream;
+import java.lang.reflect.Field;
 
 
 @Component
@@ -22,14 +31,40 @@ public class BeanListenerProcessor extends BaseNnte implements BeanPostProcessor
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         Class clazz=bean.getClass();
         String className=clazz.getSimpleName();
-        outLogInfo("设置组件[" + className + "]创建完成!");
+        outLogDebug("设置组件[" + className + "]创建完成!");
+        RootConfigProperties rootConfigProperties = bean.getClass().getAnnotation(RootConfigProperties.class);
+        if (rootConfigProperties!=null){
+            //如果组件设置了从配置文件自动获取参数
+            String jarPath= FileUtil.toUNIXpath(System.getProperty("user.dir"));
+            String configFile = jarPath+"/config/"+rootConfigProperties.fileName();
+            outLogInfo("config properties File="+configFile);
+            try {
+                InputStreamResource resource = new InputStreamResource(new FileInputStream(configFile));
+                if (resource.exists()) {
+                    EncodedResource encodedResource = new EncodedResource(resource, "utf-8");// UTF-8
+                    ResourcePropertySource rps = new ResourcePropertySource(encodedResource);
+                    Field[] fields = clazz.getDeclaredFields();//不含父类字段
+                    for (int i = 0; i < fields.length; i++) {
+                        String paramName = rootConfigProperties.prefix() + "." + fields[i].getName();
+                        Object property = rps.getProperty(paramName);
+                        if (property != null) {
+                            fields[i].setAccessible(true); // 设置属性是可以访问的
+                            BeanUtils.setFeildValue(property, fields[i], bean);
+                            outLogInfo("加载配置参数" + paramName + "=" + property.toString());
+                        }
+                    }
+                }
+            }catch (Exception e){
+                outLogExp(e);
+            }
+        }
         if (bean instanceof BaseNnte) {
             BaseNnte BaseNntebean = (BaseNnte) bean;
             BusiLogAttr logAttr = bean.getClass().getAnnotation(BusiLogAttr.class);
             if (logAttr != null) {
                 String loggerName = logAttr.value();
                 BaseNntebean.setFrame_loggerName(loggerName);
-                BaseNntebean.outLogInfo("设置组件[" + className + "]日志属性：" + logAttr.value());
+                BaseNntebean.outLogDebug("设置组件[" + className + "]日志属性：" + logAttr.value());
             }else
                 BaseNntebean.setFrame_loggerName(className);
         }
