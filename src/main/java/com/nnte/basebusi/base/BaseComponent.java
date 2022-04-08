@@ -7,10 +7,7 @@ import com.nnte.framework.annotation.ConfigLoad;
 import com.nnte.framework.annotation.DBSchemaInterface;
 import com.nnte.framework.base.*;
 import com.nnte.framework.entity.KeyValue;
-import com.nnte.framework.utils.DateUtils;
-import com.nnte.framework.utils.LogUtil;
-import com.nnte.framework.utils.NumberUtil;
-import com.nnte.framework.utils.StringUtils;
+import com.nnte.framework.utils.*;
 import com.zaxxer.hikari.HikariConfig;
 import org.springframework.context.ApplicationContext;
 
@@ -353,5 +350,15 @@ public abstract class BaseComponent extends BaseBusi {
         config.setIdleTimeout(srcConfig.getIdleTimeout());
         config.setConnectionTestQuery(srcConfig.getConnectionTestQuery());
         dynamicDatabaseSourceHolder.initDataBaseSource(DBSrcName, config, isDefault);
+    }
+    /**
+     * 给配置文件加上默认的config路径
+     * */
+    public static String getRootConfigPropertiesPath(String properties){
+        String jarPath= FileUtil.toUNIXpath(System.getProperty("user.dir"));
+        if (jarPath.indexOf(0)!='/')
+            jarPath = "/" + jarPath;
+        String path = StringUtils.pathAppend(jarPath,"config");
+        return StringUtils.pathAppend(path,properties);
     }
 }
