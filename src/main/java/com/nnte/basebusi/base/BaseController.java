@@ -3,7 +3,6 @@ package com.nnte.basebusi.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nnte.basebusi.entity.ResponseResult;
 import com.nnte.basebusi.excption.BusiException;
-import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.entity.KeyValue;
 import com.nnte.framework.utils.*;
 
@@ -215,5 +214,27 @@ public abstract class BaseController extends BaseBusi{
             BaseLog.outLogExp(newBe);
             return error("-1",e.getMessage());
         }
+    }
+
+    public static void setCors(HttpServletRequest request, HttpServletResponse response){
+        // 不使用*，自动适配跨域域名，避免携带Cookie时失效
+        String origin = request.getHeader("Origin");
+        if(StringUtils.isNotEmpty(origin)) {
+            response.setHeader("Access-Control-Allow-Origin", origin);
+        }
+
+        // 自适应所有自定义头
+        String headers = request.getHeader("Access-Control-Request-Headers");
+        if(StringUtils.isNotEmpty(headers)) {
+            response.setHeader("Access-Control-Allow-Headers", headers);
+            response.setHeader("Access-Control-Expose-Headers", headers);
+        }
+
+        // 允许跨域的请求方法类型
+        response.setHeader("Access-Control-Allow-Methods", "GET,PUT,POST,OPTIONS,DELETE");
+        // 预检命令（OPTIONS）缓存时间，单位：秒
+        response.setHeader("Access-Control-Max-Age", "1800");
+        // 明确许可客户端发送Cookie，不允许删除字段即可
+        response.setHeader("Access-Control-Allow-Credentials", "true");
     }
 }
