@@ -27,7 +27,7 @@ public class WorkDBAopAspect extends BaseNnte{
     /*切点条件：
      * 1:组件必须有@WorkDBAspect注解，
      * 2:方法必须有@DBSrcTranc注解，
-     * 3:返回值必须是Map<String,Object>
+     * 3:返回值必须是Map<String,Object> -- （！！！该条件已取消）
      */
     /*
     @Pointcut("@target(com.nnte.framework.annotation.WorkDBAspect) && @annotation(com.nnte.basebusi.annotation.DBSrcTranc) && args(pMap,..) && execution(public java.util.Map<String,Object> *(..))")
@@ -35,7 +35,8 @@ public class WorkDBAopAspect extends BaseNnte{
     @Around(value = "WorkDBAopPointCut(pMap)")
     public Object doAround(ProceedingJoinPoint pjp, Map<String,Object> pMap) throws Throwable {
     */
-    @Pointcut("@target(com.nnte.framework.annotation.WorkDBAspect) && @annotation(com.nnte.basebusi.annotation.DBSrcTranc) && execution(public java.util.Map<String,Object> *(..))")
+    //@Pointcut("@target(com.nnte.framework.annotation.WorkDBAspect) && @annotation(com.nnte.basebusi.annotation.DBSrcTranc) && execution(public java.util.Map<String,Object> *(..))")
+    @Pointcut("@target(com.nnte.framework.annotation.WorkDBAspect) && @annotation(com.nnte.basebusi.annotation.DBSrcTranc)")
     public void WorkDBAopPointCut(){ }
 
     @Around(value = "WorkDBAopPointCut()")
