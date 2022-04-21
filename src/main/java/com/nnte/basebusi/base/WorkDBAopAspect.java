@@ -4,7 +4,6 @@ import com.nnte.basebusi.annotation.BusiLogAttr;
 import com.nnte.basebusi.annotation.DBSrcTranc;
 import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.base.BaseService;
-import com.nnte.framework.utils.LogUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -14,7 +13,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 
 @Aspect
 @Component
@@ -41,8 +39,8 @@ public class WorkDBAopAspect extends BaseNnte{
 
     @Around(value = "WorkDBAopPointCut()")
     public Object doAround(ProceedingJoinPoint pjp) throws Throwable {
-
-        Map<String,Object> ret = BaseNnte.newMapRetObj();
+        boolean isSetDB = false;
+        boolean isNeedRollback =false;
         try {
             Method method = getMethod(pjp);
             DBSrcTranc dbSrcTranc = method.getAnnotation(DBSrcTranc.class);
@@ -50,16 +48,18 @@ public class WorkDBAopAspect extends BaseNnte{
             boolean autocommit=dbSrcTranc.autocommit();
             outLogDebug("WorkDBAopPointCut dataSrcName="+value+" start ...");
             BaseService.setThreadLocalSession(value,autocommit);
-            ret =  (Map<String,Object>)pjp.proceed();
-            return ret;
-        } catch (Exception e) {
-            BaseNnte.setRetFalse(ret,9999,"系统异常[ConfDBAopAspect:doAround]");
-            outLogError(ret.get("msg").toString());
-            BaseLog.outLogExp(e);
-            return ret;
-        } finally {
-            BaseService.removeThreadLocalSession(ret);
-            outLogDebug("WorkDBAopPointCut finally ...");
+            isSetDB = true;
+            return pjp.proceed();//执行原函数
+        }catch (Exception e){
+            //遇到任何异常都需要rollback;
+            isNeedRollback = true;
+            throw e;
+        }
+        finally {
+            if (isSetDB) {
+                BaseService.removeThreadLocalSession(isNeedRollback);
+                outLogDebug("WorkDBAopPointCut finally ...");
+            }
         }
     }
 

@@ -331,7 +331,7 @@ public abstract class BaseComponent extends BaseBusi {
         String[] dbTypes = dynamicDatabaseSourceHolder.queryDBTypes();
         if (dbTypes == null || dbTypes.length <= 0)
             dynamicDatabaseSourceHolder.loadDBSchemaInterface();
-        DynamicDatabaseSourceHolder.dbsourceSqlSessionFactory dbsf = dynamicDatabaseSourceHolder.getDBsrcSSF(DBSrcName);
+        dbsourceSqlSessionFactory dbsf = dynamicDatabaseSourceHolder.getDBsrcSSF(DBSrcName);
         if (dbsf != null)
             throw new BusiException(10002, "已经存在名称为：" + DBSrcName + "的数据源", LogUtil.LogLevel.error);
         if (isDefault) {
