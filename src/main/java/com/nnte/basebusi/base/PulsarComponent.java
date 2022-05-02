@@ -16,7 +16,9 @@ public abstract class PulsarComponent<T> extends BaseComponent{
     private Executor consumerExecutor;
 
     private void reConnectPulsarServer(String serviceUrl) throws PulsarClientException{
-        PULSAR_CLIENT = PulsarClient.builder().serviceUrl(serviceUrl).build();
+        PULSAR_CLIENT = PulsarClient.builder()
+                .serviceUrl(serviceUrl)
+                .build();
         outLogInfo("PulsarClient serviceUrl="+serviceUrl);
     }
     public void initPulsarClient(String pulsarIP,String pulsarPort) throws PulsarClientException{

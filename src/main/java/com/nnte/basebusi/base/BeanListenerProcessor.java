@@ -5,6 +5,7 @@ import com.nnte.basebusi.annotation.RootConfigProperties;
 import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.utils.BeanUtils;
 import com.nnte.framework.utils.FileUtil;
+import com.nnte.framework.utils.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.io.InputStreamResource;
@@ -58,14 +59,12 @@ public class BeanListenerProcessor extends BaseNnte implements BeanPostProcessor
                     ResourcePropertySource rps = new ResourcePropertySource(encodedResource);
                     if (rootConfigProperties.superSet()) {//如果含父类字段
                         for (String propertyName : rps.getPropertyNames()) {
+                            String prefix = rootConfigProperties.prefix();
+                            if (propertyName.indexOf(prefix)!=0)//此处需要判断前缀
+                                    continue;
                             Object property = rps.getProperty(propertyName);
                             if (property != null) {
-                                String fName;
-                                if (propertyName.indexOf(".") >= 0) {
-                                    String[] s = propertyName.split("\\.");
-                                    fName = s[s.length - 1];
-                                } else
-                                    fName = propertyName;
+                                String fName= StringUtils.right(propertyName,propertyName.length()-prefix.length()-1);
                                 Field f = BeanUtils.getFieldByName(clazz, fName);
                                 if (f != null) {
                                     setFieldParamValue(property,masked,f,bean,fName);
