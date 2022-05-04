@@ -3,9 +3,11 @@ package com.nnte.basebusi.base;
 import com.nnte.basebusi.annotation.*;
 import com.nnte.basebusi.entity.*;
 import com.nnte.basebusi.excption.BusiException;
-import com.nnte.framework.annotation.ConfigLoad;
 import com.nnte.framework.annotation.DBSchemaInterface;
-import com.nnte.framework.base.*;
+import com.nnte.framework.base.DBSchemaBase;
+import com.nnte.framework.base.DynamicDatabaseSourceHolder;
+import com.nnte.framework.base.SpringContextHolder;
+import com.nnte.framework.base.dbsourceSqlSessionFactory;
 import com.nnte.framework.entity.KeyValue;
 import com.nnte.framework.utils.*;
 import com.zaxxer.hikari.HikariConfig;
@@ -36,12 +38,6 @@ public abstract class BaseComponent extends BaseBusi {
      * 定义系统模块集合
      */
     private static TreeMap<String, SysModel> SysModelMap = new TreeMap<>();
-    /**
-     * 取APP应用程序本地配置接口，通过本接口使组件可以反向取得应用程序的配置数据
-     */
-    @ConfigLoad
-    public ConfigInterface appConfig;
-
     /**
      * 检测对象属性的值是否正确，本函数一般用于输入检测
      */
