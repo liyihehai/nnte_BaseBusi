@@ -345,7 +345,7 @@ public abstract class BaseComponent extends BaseBusi {
         config.setMaximumPoolSize(srcConfig.getMaximumPoolSize());
         config.setIdleTimeout(srcConfig.getIdleTimeout());
         config.setConnectionTestQuery(srcConfig.getConnectionTestQuery());
-        dynamicDatabaseSourceHolder.initDataBaseSource(DBSrcName, config, isDefault);
+        dynamicDatabaseSourceHolder.initDataBaseSource(DBBase,DBSrcName, config, isDefault);
     }
     /**
      * 给配置文件加上默认的config路径
