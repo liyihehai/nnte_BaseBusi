@@ -4,8 +4,10 @@ import com.nnte.basebusi.excption.BusiException;
 import com.nnte.framework.utils.DateUtils;
 import com.nnte.framework.utils.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class AppendWhere {
     public static final String Type_Direct = "direct";
@@ -88,5 +90,46 @@ public class AppendWhere {
         if (StringUtils.isNotEmpty(likeString)) {
             appendWhereList.add(new AppendWhereLike(colName, likeString));
         }
+    }
+
+    private static List<AppendWhere> initParamMapAppendWhereList(Map<String,Object> whereMap){
+        List<AppendWhere> appendWhereList = (List<AppendWhere>)whereMap.get("appendWheres");
+        if (appendWhereList==null) {
+            appendWhereList = new ArrayList<>();
+            whereMap.put("appendWheres",appendWhereList);
+        }
+        return appendWhereList;
+    }
+
+    public static void addInToWhereMap(String colName,Map<String,Object> whereMap,Integer... ints)throws BusiException{
+        List<AppendWhere> appendWhereList = initParamMapAppendWhereList(whereMap);
+        StringBuilder sb=new StringBuilder();
+        sb.append(colName).append(" in (");
+        for(int i=0;i<ints.length;i++){
+            if (i>0)
+                sb.append(",");
+            sb.append(ints[i].toString());
+        }
+        sb.append(")");
+        AppendWhere appendWhere=new AppendWhere(Type_Direct);
+        appendWhere.setColName(colName);
+        appendWhere.setWhereTxt(sb.toString());
+        appendWhereList.add(appendWhere);
+    }
+
+    public static void addInToWhereMap(String colName,Map<String,Object> whereMap,String... strs)throws BusiException{
+        List<AppendWhere> appendWhereList = initParamMapAppendWhereList(whereMap);
+        StringBuilder sb=new StringBuilder();
+        sb.append(colName).append(" in ('");
+        for(int i=0;i<strs.length;i++){
+            if (i>0)
+                sb.append("','");
+            sb.append(strs[i]).append("'");
+        }
+        sb.append(")");
+        AppendWhere appendWhere=new AppendWhere(Type_Direct);
+        appendWhere.setColName(colName);
+        appendWhere.setWhereTxt(sb.toString());
+        appendWhereList.add(appendWhere);
     }
 }
