@@ -4,10 +4,7 @@ import com.nnte.basebusi.excption.BusiException;
 import com.nnte.framework.utils.DateUtils;
 import com.nnte.framework.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AppendWhere {
     public static final String Type_Direct = "direct";
@@ -93,12 +90,71 @@ public class AppendWhere {
     }
 
     private static List<AppendWhere> initParamMapAppendWhereList(Map<String,Object> whereMap){
-        List<AppendWhere> appendWhereList = (List<AppendWhere>)whereMap.get("appendWheres");
+        List<AppendWhere> appendWhereList = (List<AppendWhere>)whereMap.get("appendWhereList");
         if (appendWhereList==null) {
             appendWhereList = new ArrayList<>();
-            whereMap.put("appendWheres",appendWhereList);
+            whereMap.put("appendWhereList",appendWhereList);
         }
         return appendWhereList;
+    }
+
+    public static void andNumberRangeToWhereMap(Object startNumber,Object endNumber,
+                                                String colName,Map<String,Object> whereMap) throws Exception{
+        andNumberRangeToWhereMap(startNumber,colName,endNumber,colName,whereMap);
+    }
+    public static void andNumberRangeToWhereMap(Object startNumber,String startColName,
+                                                Object endNumber,String endColName,Map<String,Object> whereMap) throws Exception{
+        List<AppendWhere> appendWhereList = initParamMapAppendWhereList(whereMap);
+        if (startNumber!=null){
+            String wTxt= startColName + ">="+ startNumber.toString();
+            AppendWhere where = new AppendWhere(Type_Direct);
+            where.setWhereTxt(wTxt);
+            appendWhereList.add(where);
+        }
+        if (endNumber!=null){
+            String wTxt= endColName + "<=" + endNumber.toString();
+            AppendWhere where = new AppendWhere(Type_Direct);
+            where.setWhereTxt(wTxt);
+            appendWhereList.add(where);
+        }
+    }
+
+    public static void andDateRangeToWhereMap(String colName, Date startDate, Date endDate,Map<String,Object> whereMap) throws Exception{
+        andDateRangeToWhereMap(colName,startDate,colName,endDate,whereMap);
+    }
+
+    public static void andDateRangeToWhereMap(String startColName, Date startDate,
+                                              String endColName, Date endDate,Map<String,Object> whereMap) throws Exception{
+        List<AppendWhere> appendWhereList = initParamMapAppendWhereList(whereMap);
+        if (startDate!=null){
+            String wTxt= startColName + ">='"+ DateUtils.dateToString_full(DateUtils.todayZeroTime(startDate))+"'";
+            AppendWhere where = new AppendWhere(Type_Direct);
+            where.setWhereTxt(wTxt);
+            appendWhereList.add(where);
+        }
+        if (endDate!=null){
+            String wTxt= endColName + "<='" + DateUtils.dateToString_full(DateUtils.todayNightZeroTime(endDate)) + "'";
+            AppendWhere where = new AppendWhere(Type_Direct);
+            where.setWhereTxt(wTxt);
+            appendWhereList.add(where);
+        }
+    }
+
+    public static void addEqualsToWhereMap(Object value,String valueObjName, Map<String,Object> whereMap)throws BusiException{
+        if (value!=null) {
+            if (value instanceof String && value.equals(""))
+                return;
+            whereMap.put(valueObjName,value);
+        }
+    }
+    /**
+     * 向条件队列中增加一条Like的文本条件
+     * */
+    public static void addLikeToWhereMap(String likeString,String colName, Map<String,Object> whereMap)throws BusiException{
+        if (StringUtils.isNotEmpty(likeString)) {
+            List<AppendWhere> appendWhereList = initParamMapAppendWhereList(whereMap);
+            appendWhereList.add(new AppendWhereLike(colName, likeString));
+        }
     }
 
     public static void addInToWhereMap(String colName,Map<String,Object> whereMap,Integer... ints)throws BusiException{
@@ -125,6 +181,29 @@ public class AppendWhere {
             if (i>0)
                 sb.append("','");
             sb.append(strs[i]).append("'");
+        }
+        sb.append(")");
+        AppendWhere appendWhere=new AppendWhere(Type_Direct);
+        appendWhere.setColName(colName);
+        appendWhere.setWhereTxt(sb.toString());
+        appendWhereList.add(appendWhere);
+    }
+
+    public static void addInToWhereMap(String colName, Map<String,Object> whereMap, Set<Object> set)throws BusiException{
+        if (set.size()<=0)
+            return;
+        Object[] os=set.toArray();
+        Object o0=os[0];
+        String f = "'";
+        if (o0 instanceof Integer || o0 instanceof Long)
+            f = "";
+        List<AppendWhere> appendWhereList = initParamMapAppendWhereList(whereMap);
+        StringBuilder sb=new StringBuilder();
+        sb.append(colName).append(" in (").append(f);
+        for(int i=0;i<set.size();i++){
+            if (i>0)
+                sb.append(f).append(",").append(f);
+            sb.append(os[i].toString()).append(f);
         }
         sb.append(")");
         AppendWhere appendWhere=new AppendWhere(Type_Direct);
