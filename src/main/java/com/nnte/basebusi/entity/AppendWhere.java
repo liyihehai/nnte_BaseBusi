@@ -98,6 +98,13 @@ public class AppendWhere {
         return appendWhereList;
     }
 
+    public static void andWhereTxtToWhereMap(String wTxt,Map<String,Object> whereMap) throws Exception{
+        List<AppendWhere> appendWhereList = initParamMapAppendWhereList(whereMap);
+        AppendWhere where = new AppendWhere(Type_Direct);
+        where.setWhereTxt(wTxt);
+        appendWhereList.add(where);
+    }
+
     public static void andNumberRangeToWhereMap(Object startNumber,Object endNumber,
                                                 String colName,Map<String,Object> whereMap) throws Exception{
         andNumberRangeToWhereMap(startNumber,colName,endNumber,colName,whereMap);
