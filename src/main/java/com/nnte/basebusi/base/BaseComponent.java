@@ -35,10 +35,6 @@ public abstract class BaseComponent extends BaseBusi {
      */
     private static TreeMap<String, MEnter> SysRulerMEnterMap = new TreeMap<>();
     /**
-     * 定义系统模块集合
-     */
-    private static TreeMap<String, SysModel> SysModelMap = new TreeMap<>();
-    /**
      * 检测对象属性的值是否正确，本函数一般用于输入检测
      */
     public static boolean checkModelFields(Object model) throws BusiException {
@@ -152,6 +148,9 @@ public abstract class BaseComponent extends BaseBusi {
                 if (feAnno != null) {
                     MEnter fe = new MEnter(feAnno.path(), feAnno.name(), feAnno.desc(), feAnno.sysRole(),
                             feAnno.roleRuler(), AppRegistry.getAppCode(), feAnno.moduleCode(), feAnno.moduleVersion());
+                    SysModule sysModule=AppRegistry.getSysModule(feAnno.moduleCode());
+                    if (sysModule==null)
+                        throw new BusiException("入口功能没指定正确的模块代码");
                     if (StringUtils.isEmpty(fe.getPath()))
                         throw new BusiException("功能模块路径为空");
                     if (MEnterMap.get(fe.getPath()) != null)
@@ -180,17 +179,6 @@ public abstract class BaseComponent extends BaseBusi {
                             sr = newSr;
                         }
                         sr.getRulerMap().put(fe.getRoleRuler(), fe.getName());
-                    }
-                    if (SysModelMap.get(fe.getModuleCode()) == null) {
-                        //需要初始化模块定义
-                        String modelName = AppRegistry.getAppModuleName(fe.getModuleCode());
-                        if (StringUtils.isEmpty(modelName))
-                            throw new BusiException("模块编号" + fe.getModuleCode() + "没有通过应用注册!");
-                        SysModel newSysModel = new SysModel();
-                        newSysModel.setModelCode(fe.getModuleCode());
-                        newSysModel.setModelVersion(fe.getModuleVersion());
-                        newSysModel.setModelName(modelName);
-                        SysModelMap.put(fe.getModuleCode(), newSysModel);
                     }
                 }
             }
@@ -294,28 +282,6 @@ public abstract class BaseComponent extends BaseBusi {
         }
         return null;
     }
-
-    /**
-     * 取得模块序列
-     */
-    public static List<SysModel> getSysModelList() {
-        return new ArrayList<>(SysModelMap.values());
-    }
-
-    /**
-     * 取得模块MAP
-     */
-    public static Map<String, SysModel> getSysModelMap() {
-        return new HashMap<>(SysModelMap);
-    }
-
-    /**
-     * 取得模块定义
-     */
-    public static SysModel getSysModel(String modelCode) {
-        return SysModelMap.get(modelCode);
-    }
-
     /**
      * 创建一个数据源
      */
