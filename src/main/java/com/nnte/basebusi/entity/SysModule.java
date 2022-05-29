@@ -2,10 +2,16 @@ package com.nnte.basebusi.entity;
 
 public class SysModule {
     public SysModule(String code,String name){
-        new SysModule(code,name,true);
+        moduleCode = code;
+        moduleName=name;
+        frameModule=true;
+        setModuleVersion("1.0.1-SNAPSHOT");
     }
     public SysModule(String code,String name,boolean frame){
-        new SysModule(code,name,frame,"1.0.1-SNAPSHOT");
+        moduleCode = code;
+        moduleName=name;
+        frameModule=frame;
+        setModuleVersion("1.0.1-SNAPSHOT");
     }
     public SysModule(String code,String name,boolean frame,String version){
         moduleCode = code;

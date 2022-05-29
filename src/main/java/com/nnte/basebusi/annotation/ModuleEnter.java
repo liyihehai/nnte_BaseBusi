@@ -28,5 +28,5 @@ public @interface ModuleEnter {
      * */
     //String appCode();                     //应用编码
     String moduleCode();                    //模块编号
-    String moduleVersion() default "1.0";   //模块版本
+    //String moduleVersion() default "1.0";   //模块版本
 }

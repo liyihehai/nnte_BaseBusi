@@ -137,7 +137,7 @@ public abstract class BaseComponent extends BaseBusi {
     /**
      * 装载系统的模块入口定义及系统权限定义
      */
-    public static void loadSystemFuntionEnters() throws BusiException {
+    public static void loadSystemFuntionEnters() throws Exception {
         ApplicationContext sch = SpringContextHolder.getApplicationContext();
         String[] names = sch.getBeanDefinitionNames();
         for (String beanName : names) {
@@ -147,7 +147,9 @@ public abstract class BaseComponent extends BaseBusi {
                 ModuleEnter feAnno = m.getAnnotation(ModuleEnter.class);
                 if (feAnno != null) {
                     MEnter fe = new MEnter(feAnno.path(), feAnno.name(), feAnno.desc(), feAnno.sysRole(),
-                            feAnno.roleRuler(), AppRegistry.getAppCode(), feAnno.moduleCode(), feAnno.moduleVersion());
+                            feAnno.roleRuler(), AppRegistry.getAppCode(), feAnno.moduleCode()
+                            //, feAnno.moduleVersion()
+                    );
                     SysModule sysModule=AppRegistry.getSysModule(feAnno.moduleCode());
                     if (sysModule==null)
                         throw new BusiException("入口功能没指定正确的模块代码");
@@ -186,17 +188,26 @@ public abstract class BaseComponent extends BaseBusi {
         //守护线程组件自动注册
         BaseLog.logInfo("守护线程组件自动注册......");
         for (String beanName : names) {
-            WatchComponent watchComponent = SpringContextHolder.getBean(WatchComponent.class);
+            //WatchComponent watchComponent = SpringContextHolder.getBean(WatchComponent.class);
+            LocalTaskComponent localTaskComponent = SpringContextHolder.getBean(LocalTaskComponent.class);
             Object instanceBody = sch.getBean(beanName);
             if (instanceBody instanceof WatchInterface) {
                 WatchAttr watchAttr = instanceBody.getClass().getAnnotation(WatchAttr.class);
-                int index = 0;
-                int execTimes = -1;
+//                int index = 0;
+  //              int execTimes = -1;
                 if (watchAttr != null) {
-                    index = watchAttr.value();
-                    execTimes = watchAttr.execTimes();
+    //                index = watchAttr.value();
+      //              execTimes = watchAttr.execTimes();
+                    WatchRegisterItem item = new WatchRegisterItem(
+                            (WatchInterface) instanceBody,
+                            watchAttr.value(),
+                            watchAttr.cron(),
+                            watchAttr.execTimes(),
+                            null,null
+                    );
+                    localTaskComponent.registerWatchItem(item);
                 }
-                watchComponent.registerWatchItem((WatchInterface) instanceBody, index, execTimes);
+                //watchComponent.registerWatchItem((WatchInterface) instanceBody, index, execTimes);
             }
         }
         //启动实现了LoadModelLibTypeInterface接口的组件加载模块LibType
