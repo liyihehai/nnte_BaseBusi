@@ -74,10 +74,10 @@ public abstract class PulsarComponent<T> extends BaseComponent implements Pulsar
 
     /**
      * 创建消费者，同时创建了处理的线程池，需要设置
-     * consumnerThreadCount：线程池大小
+     * consumerThreadCount：线程池大小
      * blockSize：缓存队列大小
      * */
-    public void createCustmou(boolean isPersistent,String tenant,String namespace,
+    public void createConsumer(boolean isPersistent,String tenant,String namespace,
                               String topic,String ip,String consumerName,SubscriptionType subscriptionType,
                               int consumerThreadCount,int blockSize) throws PulsarClientException{
         ConsumerBuilder<T> pb=PULSAR_CLIENT.newConsumer(JSONSchema.of(contentClazz));
