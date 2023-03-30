@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.nnte.basebusi.entity.ResponseResult;
 import com.nnte.basebusi.excption.BusiException;
 import com.nnte.framework.entity.KeyValue;
-import com.nnte.framework.utils.*;
+import com.nnte.framework.utils.FreeMarkertUtil;
+import com.nnte.framework.utils.JsonUtil;
+import com.nnte.framework.utils.MapUtil;
+import com.nnte.framework.utils.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -131,7 +134,7 @@ public abstract class BaseController extends BaseBusi{
             response.getWriter().print(content);
             response.getWriter().close();
         }catch (IOException ioe){
-            throw new BusiException(ioe,1005, LogUtil.LogLevel.error);
+            throw new BusiException(ioe,1005);
         }
     }
     /**
@@ -144,7 +147,7 @@ public abstract class BaseController extends BaseBusi{
             response.getWriter().print(json);
             response.getWriter().close();
         } catch (IOException ioe) {
-            throw new BusiException(ioe,1005, LogUtil.LogLevel.error);
+            throw new BusiException(ioe,1005);
         }
     }
 
@@ -169,7 +172,7 @@ public abstract class BaseController extends BaseBusi{
                 MapUtil.copyFromSrcMap(tmpMap,_dim);
             }
         } catch (Exception e) {
-            throw new BusiException(e,9999, LogUtil.LogLevel.error);
+            throw new BusiException(e,9999);
         }
     }
 

@@ -12,9 +12,9 @@
 
 	<repositories>
         <repository>
-            <id>bd-nexus-snapshots</id>
+            <id>maven-snapshots</id>
             <name>maven-snapshots</name>
-            <url>http://120.48.2.149:8999/repository/maven-snapshots/</url>
+            <url>http://192.168.71.81:8081/repository/maven-snapshots/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -23,8 +23,8 @@
 	
     <distributionManagement>
         <snapshotRepository>
-            <id>bd-nexus-snapshots</id>
-            <url>http://120.48.2.149:8999/repository/maven-snapshots/</url>
+            <id>maven-snapshots</id>
+            <url>http://192.168.71.81:8081/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 

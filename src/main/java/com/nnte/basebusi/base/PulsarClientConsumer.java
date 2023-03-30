@@ -1,10 +1,11 @@
 package com.nnte.basebusi.base;
 
 import com.nnte.basebusi.annotation.PulsarConsumerInterface;
-import com.nnte.framework.utils.LogUtil;
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;
 import org.apache.pulsar.client.api.PulsarClientException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
@@ -12,6 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class PulsarClientConsumer<T> implements Runnable {
+    private static Logger log = LoggerFactory.getLogger(PulsarClientConsumer.class);
     private final static String LoggerName="PulsarClientConsumer";
     private Consumer<T> consumer;
     private boolean directAck = true;
@@ -33,13 +35,11 @@ public class PulsarClientConsumer<T> implements Runnable {
     @Override
     public void run() {
         try {
-            LogUtil.log(LoggerName, LogUtil.LogLevel.debug,
-                    "consumer "+consumer.getConsumerName()+" thread start");
+            log.debug("consumer "+consumer.getConsumerName()+" thread start");
             while (true) {
                 Message<T> message = consumer.receive();
                 try {
-                    LogUtil.log(LoggerName, LogUtil.LogLevel.debug,
-                            "consumer "+consumer.getConsumerName()+" receive message="+message.getMessageId());
+                    log.debug("consumer "+consumer.getConsumerName()+" receive message="+message.getMessageId());
                     if (directAck)
                         consumer.acknowledge(message);
                     if (consumerInterface!=null) {
@@ -52,15 +52,14 @@ public class PulsarClientConsumer<T> implements Runnable {
                     if (!directAck)
                         consumer.acknowledge(message);
                 } catch (Exception e) {
-                    LogUtil.logExp(LoggerName, e);
+                    log.error(e.getMessage(),e);
                     consumer.negativeAcknowledge(message);
                 }
             }
         }catch (PulsarClientException pce){
-            LogUtil.logExp(LoggerName, pce);
+            log.error(pce.getMessage(),pce);
         }
-        LogUtil.log(LoggerName, LogUtil.LogLevel.debug,
-                "consumer "+consumer.getConsumerName()+" thread closed");
+        log.debug("consumer "+consumer.getConsumerName()+" thread closed");
     }
 
     static class ConsumerProcess<T> extends Thread{
@@ -75,7 +74,7 @@ public class PulsarClientConsumer<T> implements Runnable {
             try{
                 consumerInterface.onConsumerMessageReceived(message);
             }catch (Exception e){
-                LogUtil.logExp(LoggerName, e);
+                log.error(e.getMessage(),e);
             }
         }
     }

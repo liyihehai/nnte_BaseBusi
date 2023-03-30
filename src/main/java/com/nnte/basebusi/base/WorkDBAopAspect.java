@@ -1,6 +1,5 @@
 package com.nnte.basebusi.base;
 
-import com.nnte.basebusi.annotation.BusiLogAttr;
 import com.nnte.basebusi.annotation.DBSrcTranc;
 import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.base.BaseService;
@@ -16,7 +15,6 @@ import java.lang.reflect.Method;
 
 @Aspect
 @Component
-@BusiLogAttr(BaseBusi.Logger_Name)
 public class WorkDBAopAspect extends BaseNnte{
     /*
     @Autowired

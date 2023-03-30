@@ -9,7 +9,10 @@ import com.nnte.framework.base.DynamicDatabaseSourceHolder;
 import com.nnte.framework.base.SpringContextHolder;
 import com.nnte.framework.base.dbsourceSqlSessionFactory;
 import com.nnte.framework.entity.KeyValue;
-import com.nnte.framework.utils.*;
+import com.nnte.framework.utils.DateUtils;
+import com.nnte.framework.utils.FileUtil;
+import com.nnte.framework.utils.NumberUtil;
+import com.nnte.framework.utils.StringUtils;
 import com.zaxxer.hikari.HikariConfig;
 import org.springframework.context.ApplicationContext;
 
@@ -306,11 +309,11 @@ public abstract class BaseComponent extends BaseBusi {
             dynamicDatabaseSourceHolder.loadDBSchemaInterface();
         dbsourceSqlSessionFactory dbsf = dynamicDatabaseSourceHolder.getDBsrcSSF(DBSrcName);
         if (dbsf != null)
-            throw new BusiException(10002, "已经存在名称为：" + DBSrcName + "的数据源", LogUtil.LogLevel.error);
+            throw new BusiException(10002, "已经存在名称为：" + DBSrcName + "的数据源");
         if (isDefault) {
             dbsf = dynamicDatabaseSourceHolder.getDefaultDBsrcSSF();
             if (dbsf != null)
-                throw new BusiException(10003, "应用不能定义多个默认数据源", LogUtil.LogLevel.error);
+                throw new BusiException(10003, "应用不能定义多个默认数据源");
         }
         HikariConfig config = new HikariConfig();
         config.setDriverClassName(srcConfig.getDBDriverClassName());

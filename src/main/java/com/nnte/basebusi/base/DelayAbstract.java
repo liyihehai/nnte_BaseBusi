@@ -4,6 +4,8 @@ import com.nnte.basebusi.annotation.TriggerInterface;
 import com.nnte.basebusi.excption.BusiException;
 import com.nnte.framework.utils.*;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.security.AccessController;
@@ -17,6 +19,7 @@ import java.util.concurrent.*;
  * nnte延迟
  * */
 public abstract class DelayAbstract<T extends TriggerInterface> extends BaseBusi implements Runnable{
+    private static Logger log = LoggerFactory.getLogger(DelayAbstract.class);
     private final List<T> TriggerList = new ArrayList<>();
     private volatile int listenState = 0;
     private volatile Object waitObject = new Object();
@@ -97,7 +100,6 @@ public abstract class DelayAbstract<T extends TriggerInterface> extends BaseBusi
         public PopProcess(T trigger,DelayAbstract instance){
             this.trigger = trigger;
             this.delayInstance = instance;
-            this.LoggerName = instance.getFrame_loggerName();
         }
 
         //触发任务: type = 触发任务方式:1自动触发，2手动触发
@@ -105,22 +107,22 @@ public abstract class DelayAbstract<T extends TriggerInterface> extends BaseBusi
             Long startTime = (new Date()).getTime();
             Exception exeExp = null;
             try{
-                LogUtil.log(LoggerName, LogUtil.LogLevel.debug,"task "+trigger.getKey()+" is running");
+                log.debug("task "+trigger.getKey()+" is running");
                 delayInstance.onRunTriggerMethod(trigger);
             }catch (Exception e){
-                LogUtil.logExp(LoggerName,e);
+                log.error(e.getMessage(),e);
                 exeExp = e;
             }finally {
                 try {
                     delayInstance.removePersistRecord(trigger);
                 }catch (Exception e){
-                    LogUtil.logExp(LoggerName,e);
+                    log.error(e.getMessage(),e);
                 }
                 Long endTime = (new Date()).getTime();
                 try{
                     delayInstance.onTriggerMethodFinished(trigger,type,exeExp,startTime,endTime);
                 }catch (Exception e){
-                    LogUtil.logExp(LoggerName,e);
+                    log.error(e.getMessage(),e);;
                 }
             }
         }

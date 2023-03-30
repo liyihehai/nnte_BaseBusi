@@ -1,13 +1,10 @@
 package com.nnte.basebusi.base;
 
-import com.nnte.basebusi.excption.BusiException;
 import com.nnte.framework.base.BaseNnte;
-import com.nnte.framework.utils.LogUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseBusi extends BaseNnte {
 
-    public static final String Logger_Name = "nnte_BaseBusi";
-
-    public void outLogExp(BusiException be){ LogUtil.logExp(getFrame_loggerName(),
-            LogUtil.LogLevel.warn,be); }
+    private static Logger log = LoggerFactory.getLogger(BaseBusi.class);
 }

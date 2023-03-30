@@ -2,9 +2,10 @@ package com.nnte.basebusi.excption;
 
 import com.nnte.basebusi.annotation.BusiLogAttr;
 import com.nnte.framework.base.BaseNnte;
-import com.nnte.framework.utils.LogUtil;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 业务异常
@@ -12,18 +13,9 @@ import lombok.Setter;
 @Setter
 @Getter
 public class BusiException extends Exception{
+    private static Logger log = LoggerFactory.getLogger(BusiException.class);
     private String callerLogger;
     private Integer expCode;
-    private LogUtil.LogLevel expLevel;
-
-    public BusiException(Integer code,String msg,LogUtil.LogLevel level){
-        super(msg);
-        defaultExp();
-        if (code!=null)
-            expCode = code;
-        if (level!=null)
-            expLevel = level;
-    }
 
     public BusiException(Integer code,String msg){
         super(msg);
@@ -35,15 +27,6 @@ public class BusiException extends Exception{
     public BusiException(Exception e){
         super(e);
         defaultExp();
-    }
-
-    public BusiException(Exception e,Integer code,LogUtil.LogLevel level){
-        super(e);
-        defaultExp();
-        if (code!=null)
-            expCode = code;
-        if (level!=null)
-            expLevel = level;
     }
 
     public BusiException(Exception e,Integer code){
@@ -60,7 +43,6 @@ public class BusiException extends Exception{
 
     private void defaultExp(){
         expCode = 3000;//错误默认为3000
-        expLevel = LogUtil.LogLevel.warn; //默认为警告
         StackTraceElement[] elements=this.getStackTrace();
         for(int i=0;i<elements.length;i++){
             Class clazz=elements[i].getClass();
@@ -80,6 +62,6 @@ public class BusiException extends Exception{
      * */
     public void printException(){
         //LogUtil.logExp(callerLogger,expLevel,this);
-        LogUtil.log(callerLogger,expLevel,"BusiException:"+this.getMessage());
+        log.info("BusiException:"+this.getMessage());
     }
 }

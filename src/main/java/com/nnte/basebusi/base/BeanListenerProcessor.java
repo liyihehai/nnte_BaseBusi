@@ -6,6 +6,8 @@ import com.nnte.framework.base.BaseNnte;
 import com.nnte.framework.utils.BeanUtils;
 import com.nnte.framework.utils.FileUtil;
 import com.nnte.framework.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.io.InputStreamResource;
@@ -18,12 +20,8 @@ import java.lang.reflect.Field;
 
 
 @Component
-@BusiLogAttr(BaseBusi.Logger_Name)
 public class BeanListenerProcessor extends BaseNnte implements BeanPostProcessor {
-    public BeanListenerProcessor() {
-        setFrame_loggerName(BaseBusi.Logger_Name);
-    }
-
+    private static Logger log = LoggerFactory.getLogger(BeanListenerProcessor.class);
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         return bean;
@@ -88,14 +86,10 @@ public class BeanListenerProcessor extends BaseNnte implements BeanPostProcessor
             }
         }
         if (bean instanceof BaseNnte) {
-            BaseNnte BaseNntebean = (BaseNnte) bean;
             BusiLogAttr logAttr = bean.getClass().getAnnotation(BusiLogAttr.class);
             if (logAttr != null) {
-                String loggerName = logAttr.value();
-                BaseNntebean.setFrame_loggerName(loggerName);
-                BaseNntebean.outLogDebug("设置组件[" + className + "]日志属性：" + logAttr.value());
-            } else
-                BaseNntebean.setFrame_loggerName(className);
+                log.debug("设置组件[" + className + "]日志属性：" + logAttr.value());
+            }
         }
         return bean;
     }
